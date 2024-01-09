@@ -120,7 +120,7 @@ final class MovieQuizViewController: UIViewController {
         // Параметры рамки изображения
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
-        imageView.layer.cornerRadius = 6
+        imageView.layer.cornerRadius = 20
         
         // Окраски рамки изображения в зависимости от ответа
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
