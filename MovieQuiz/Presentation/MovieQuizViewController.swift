@@ -21,15 +21,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        questionFactory?.delegate = self
-        questionFactory?.requestNextQuestion()
-        //        if let firstQuestion = questionFactory.requestNextQuestion() {
-        //            currentQuestion = firstQuestion
-        //            let viewModel = convert(model: firstQuestion)
-        //            show(quiz: viewModel)
-        //        }
-        
+
+        guard let q = questionFactory?.delegate = self else { return print("Фабрика - ошибка") }
+        guard let questionFactory = questionFactory?.requestNextQuestion() else { return print("Вопрос - ошибка") }
+
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -63,7 +58,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         // Вызов метода проверки правильности ответа на вопрос
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        
+        print("Нажата кнопка ДА")
+
     }
     
     // Приватный метод выполняемый при нажатии кнопки НЕТ
@@ -81,7 +77,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         // Вызов метода проверки правильности ответа на вопрос
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        
+        print("Нажата кнопка НЕТ")
+
     }
     
     // MARK: - Private functions
@@ -92,6 +89,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+        print("Сконвертировано")
         return questionStep
     }
     
@@ -105,6 +103,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         // Убираем рамку которая остается от предыдущего вызова метода проверки ответа на вопрос
         imageView.layer.borderWidth = 0
+        print("Модель показана")
+
     }
     
     // Приватный метод проверки ответа на вопрос
@@ -121,6 +121,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         // Увеличение счетчика правильных ответов
         if isCorrect {
             correctAnswers += 1
+            print("Счетчик увеличен")
+
         }
         
         // Запускаем задачу через 1 секунду c помощью диспетчера задач
@@ -128,6 +130,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             // Показываем следующий mock или результаты через 1 секунду
             guard let self = self else { return } // разворачиваем слабую ссылку
             self.showNextQuestionOrResults()
+            print("Показ с задержкой")
+
         }
         
     }
@@ -173,6 +177,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 //            }
             
             self.questionFactory?.requestNextQuestion()
+            print("Переход к следующему вопросу")
+
             
         }
     }

@@ -55,12 +55,14 @@ class QuestionFactory: QuestionFactoryProtocol {
     ]
     
     func requestNextQuestion() {
+        print("Is a requestNextQuestion() calling")
         guard let index = (0..<questions.count).randomElement() else {
             delegate?.didReceiveNextQuestion(question: nil)
             return
         }
         
         let question = questions[safe: index]
+        print("Is not OK")
         delegate?.didReceiveNextQuestion(question: question)
     }
     
