@@ -62,8 +62,8 @@ class QuestionFactory: QuestionFactoryProtocol {
         }
         
         let question = questions[safe: index]
-        print("Is not OK")
         delegate?.didReceiveNextQuestion(question: question)
+        
     }
     
 }

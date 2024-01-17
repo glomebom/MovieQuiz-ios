@@ -15,21 +15,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var correctAnswers: Int = 0
     
     private let questionsAmount: Int = 10
-    private var questionFactory: QuestionFactoryProtocol?
+    private var questionFactory: QuestionFactoryProtocol = QuestionFactory()
     private var currentQuestion: QuizQuestion?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        guard let q = questionFactory?.delegate = self else { return print("Фабрика - ошибка") }
-        guard let questionFactory = questionFactory?.requestNextQuestion() else { return print("Вопрос - ошибка") }
+        questionFactory.delegate = self
+        questionFactory.requestNextQuestion()
 
     }
     
     // MARK: - QuestionFactoryDelegate
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
+        print("Вызов didReceiveNextQuestion")
         guard let question = question else {
             return
         }
@@ -46,9 +47,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // Приватный метод выполняемый при нажатии кнопки ДА
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         
-        //        // Константа для хранения данных из текущего mock`а
-        //        let currentQuestion = questions[currentQuestionIndex]
-        
+        // Константа для хранения данных из текущего mock`а
         guard let currentQuestion = currentQuestion else {
             return
         }
@@ -65,9 +64,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // Приватный метод выполняемый при нажатии кнопки НЕТ
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         
-        //        // Константа для хранения данных из текущего mock`а
-        //        let currentQuestion = questions[currentQuestionIndex]
-        
+        // Константа для хранения данных из текущего mock`а
         guard let currentQuestion = currentQuestion else {
             return
         }
@@ -130,7 +127,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             // Показываем следующий mock или результаты через 1 секунду
             guard let self = self else { return } // разворачиваем слабую ссылку
             self.showNextQuestionOrResults()
-            print("Показ с задержкой")
+            print("Показ следующего вопроса с задержкой")
 
         }
         
@@ -160,26 +157,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             
             // Переход к следующему вопросу
             currentQuestionIndex += 1
-            
-            //            // Константа для данных следующего mock`а
-            //            let nextQuestion = questions[currentQuestionIndex]
-            //            // Константа для модели mok`а
-            //            let viewModel = convert(model: nextQuestion)
-            //
-            //            // Вызов метода для показа следующего mock`а на экране
-            //            show(quiz: viewModel)
-            
-//            if let nextQuestion = questionFactory.requestNextQuestion() {
-//                currentQuestion = nextQuestion
-//                let viewModel = convert(model: nextQuestion)
-//                
-//                show(quiz: viewModel)
-//            }
-            
-            self.questionFactory?.requestNextQuestion()
+            self.questionFactory.requestNextQuestion()
             print("Переход к следующему вопросу")
-
-            
         }
     }
     
@@ -203,23 +182,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
-            //            // Константа для выбора 0-го элемента из массива mok`ов
-            //            let firstQuestion = self.questions[self.currentQuestionIndex]
-            //            // Константа для модели mok`а первого вопроса
-            //            let viewModel = self.convert(model: firstQuestion)
-            //
-            //            // Вызов метода показа первого mok`а
-            //            self.show(quiz: viewModel)
-            
-//            if let firstQuestion = self.questionFactory.requestNextQuestion() {
-//                self.currentQuestion = firstQuestion
-//                let viewModel = self.convert(model: firstQuestion)
-//                
-//                self.show(quiz: viewModel)
-//            }
-            
-            questionFactory?.requestNextQuestion()
-            
+            questionFactory.requestNextQuestion()
+            print("Начало нового раунда")
+
         }
         
         // Добавление действия к алерту
