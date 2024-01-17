@@ -8,7 +8,7 @@
 import Foundation
 
 // Структура для отображения результатов в алерте
-private struct QuizResultsViewModel {
+struct QuizResultsViewModel {
     let title: String
     let text: String
     let buttonText: String

@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 // Структура для отображения вопроса на экране
-private struct QuizStepViewModel {
+struct QuizStepViewModel {
     let image: UIImage
     let question: String
     let questionNumber: String

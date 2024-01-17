@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController {
+final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // Связь элементов на экране и кода
     @IBOutlet weak private var counterLabel: UILabel!
@@ -15,15 +15,83 @@ final class MovieQuizViewController: UIViewController {
     private var correctAnswers: Int = 0
     
     private let questionsAmount: Int = 10
-    private var questionFactory: QuestionFactoryProtocol /*QuestionFactory*/ = QuestionFactory()
+    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
+    
+    // MARK: - Lifecycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        questionFactory?.delegate = self
+        questionFactory?.requestNextQuestion()
+        //        if let firstQuestion = questionFactory.requestNextQuestion() {
+        //            currentQuestion = firstQuestion
+        //            let viewModel = convert(model: firstQuestion)
+        //            show(quiz: viewModel)
+        //        }
+        
+    }
+    
+    // MARK: - QuestionFactoryDelegate
+    
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+        
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: viewModel)
+        }
+    }
+    
+    // MARK: - Actions
+    
+    // Приватный метод выполняемый при нажатии кнопки ДА
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        
+        //        // Константа для хранения данных из текущего mock`а
+        //        let currentQuestion = questions[currentQuestionIndex]
+        
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+        
+        // Константа для записи значения ответа пользователя на вопрос
+        let givenAnswer = true
+        
+        // Вызов метода проверки правильности ответа на вопрос
+        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        
+    }
+    
+    // Приватный метод выполняемый при нажатии кнопки НЕТ
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
+        
+        //        // Константа для хранения данных из текущего mock`а
+        //        let currentQuestion = questions[currentQuestionIndex]
+        
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+        
+        // Константа для записи значения ответа пользователя на вопрос
+        let givenAnswer = false
+        
+        // Вызов метода проверки правильности ответа на вопрос
+        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        
+    }
+    
+    // MARK: - Private functions
     
     // Приватный метод конвертации mock`а в view-модель
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount.count)")
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
     }
     
@@ -57,7 +125,7 @@ final class MovieQuizViewController: UIViewController {
         
         // Запускаем задачу через 1 секунду c помощью диспетчера задач
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            // Показываем следующий mok или результаты через 1 секунду
+            // Показываем следующий mock или результаты через 1 секунду
             guard let self = self else { return } // разворачиваем слабую ссылку
             self.showNextQuestionOrResults()
         }
@@ -89,20 +157,22 @@ final class MovieQuizViewController: UIViewController {
             // Переход к следующему вопросу
             currentQuestionIndex += 1
             
-//            // Константа для данных следующего mock`а
-//            let nextQuestion = questions[currentQuestionIndex]
-//            // Константа для модели mok`а
-//            let viewModel = convert(model: nextQuestion)
-//            
-//            // Вызов метода для показа следующего mock`а на экране
-//            show(quiz: viewModel)
+            //            // Константа для данных следующего mock`а
+            //            let nextQuestion = questions[currentQuestionIndex]
+            //            // Константа для модели mok`а
+            //            let viewModel = convert(model: nextQuestion)
+            //
+            //            // Вызов метода для показа следующего mock`а на экране
+            //            show(quiz: viewModel)
             
-            if let nextQuestion = questionFactory.requestNextQuestion() {
-                currentQuestion = nextQuestion
-                let viewModel = convert(model: nextQuestion)
-
-                show(quiz: viewModel)
-            }
+//            if let nextQuestion = questionFactory.requestNextQuestion() {
+//                currentQuestion = nextQuestion
+//                let viewModel = convert(model: nextQuestion)
+//                
+//                show(quiz: viewModel)
+//            }
+            
+            self.questionFactory?.requestNextQuestion()
             
         }
     }
@@ -127,20 +197,22 @@ final class MovieQuizViewController: UIViewController {
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
-//            // Константа для выбора 0-го элемента из массива mok`ов
-//            let firstQuestion = self.questions[self.currentQuestionIndex]
-//            // Константа для модели mok`а первого вопроса
-//            let viewModel = self.convert(model: firstQuestion)
-//            
-//            // Вызов метода показа первого mok`а
-//            self.show(quiz: viewModel)
+            //            // Константа для выбора 0-го элемента из массива mok`ов
+            //            let firstQuestion = self.questions[self.currentQuestionIndex]
+            //            // Константа для модели mok`а первого вопроса
+            //            let viewModel = self.convert(model: firstQuestion)
+            //
+            //            // Вызов метода показа первого mok`а
+            //            self.show(quiz: viewModel)
             
-            if let firstQuestion = self.questionFactory.requestNextQuestion() {
-                self.currentQuestion = firstQuestion
-                let viewModel = self.convert(model: firstQuestion)
-
-                self.show(quiz: viewModel)
-            }
+//            if let firstQuestion = self.questionFactory.requestNextQuestion() {
+//                self.currentQuestion = firstQuestion
+//                let viewModel = self.convert(model: firstQuestion)
+//                
+//                self.show(quiz: viewModel)
+//            }
+            
+            questionFactory?.requestNextQuestion()
             
         }
         
@@ -151,54 +223,4 @@ final class MovieQuizViewController: UIViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
-    // MARK: - Lifecycle
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-//        // Показ первого вопроса
-//        show(quiz: convert(model: questions[currentQuestionIndex]))
-        
-        if let firstQuestion = questionFactory.requestNextQuestion() {
-            currentQuestion = firstQuestion
-            let viewModel = convert(model: firstQuestion)
-            show(quiz: viewModel)
-        }
-        
-    }
-    
-    // Приватный метод выполняемый при нажатии кнопки ДА
-    @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        
-//        // Константа для хранения данных из текущего mock`а
-//        let currentQuestion = questions[currentQuestionIndex]
-        
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        
-        // Константа для записи значения ответа пользователя на вопрос
-        let givenAnswer = true
-        
-        // Вызов метода проверки правильности ответа на вопрос
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        
-    }
-    
-    // Приватный метод выполняемый при нажатии кнопки НЕТ
-    @IBAction private func noButtonClicked(_ sender: UIButton) {
-        
-//        // Константа для хранения данных из текущего mock`а
-//        let currentQuestion = questions[currentQuestionIndex]
-        
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        
-        // Константа для записи значения ответа пользователя на вопрос
-        let givenAnswer = false
-        
-        // Вызов метода проверки правильности ответа на вопрос
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        
-    }
 }
