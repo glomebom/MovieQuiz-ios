@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, AlertPresenterDelegate {
     
     // Связь элементов на экране и кода
     @IBOutlet weak private var counterLabel: UILabel!
@@ -13,24 +13,32 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var currentQuestionIndex: Int = 0
     // Переменная-счетчик количества правильных ответов
     private var correctAnswers: Int = 0
-    
+    // Количество вопросов
     private let questionsAmount: Int = 10
-    private var questionFactory: QuestionFactoryProtocol = QuestionFactory()
+    
+    // Константа и переменная для фабрики вопросов
+    private let questionFactory: QuestionFactoryProtocol = QuestionFactory()
     private var currentQuestion: QuizQuestion?
+    
+    // Константа и переменная для показа алерта
+    private let alertPresenter = AlertPresenter()
+    private var alertModel: AlertModel?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         questionFactory.delegate = self
         questionFactory.requestNextQuestion()
-
+        
+        alertPresenter.delegate = self
+        
     }
     
     // MARK: - QuestionFactoryDelegate
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        print("Вызов didReceiveNextQuestion")
+        print("Вызов didReceiveNextQuestion:QuestionFactoryDelegate")
         guard let question = question else {
             return
         }
@@ -40,6 +48,39 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
+    }
+    
+    // MARK: - AlertPresenterDelegate
+    
+    // Метод для показа результатов раунда квиза
+    // Принимает вью модель AlertModel и ничего не возвращает
+    func showAlert(quiz result: AlertModel) {
+        print("Вызов showAlert")
+        // Константа для алерта
+        let alert = UIAlertController(
+            title: result.title,
+            message: result.text,
+            preferredStyle: .alert)
+        
+        // Константа для caption`а кнопки и действий выполняемых по нажатию на кнопку
+        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+            
+            // разворачиваем слабую ссылку
+            guard let self = self else { return }
+            
+            // Задаем исходные значения для начала нового раунда
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            
+            // Начало нового раунда
+            questionFactory.requestNextQuestion()
+        }
+        
+        // Добавление действия к алерту
+        alert.addAction(action)
+        
+        // Показ алерта
+        self.present(alert, animated: true, completion: nil)
     }
     
     // MARK: - Actions
@@ -57,8 +98,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         // Вызов метода проверки правильности ответа на вопрос
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        print("Нажата кнопка ДА")
-
     }
     
     // Приватный метод выполняемый при нажатии кнопки НЕТ
@@ -74,8 +113,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         // Вызов метода проверки правильности ответа на вопрос
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        print("Нажата кнопка НЕТ")
-
     }
     
     // MARK: - Private functions
@@ -86,7 +123,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-        print("Сконвертировано")
         return questionStep
     }
     
@@ -100,8 +136,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         // Убираем рамку которая остается от предыдущего вызова метода проверки ответа на вопрос
         imageView.layer.borderWidth = 0
-        print("Модель показана")
-
     }
     
     // Приватный метод проверки ответа на вопрос
@@ -118,8 +152,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         // Увеличение счетчика правильных ответов
         if isCorrect {
             correctAnswers += 1
-            print("Счетчик увеличен")
-
         }
         
         // Запускаем задачу через 1 секунду c помощью диспетчера задач
@@ -127,8 +159,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             // Показываем следующий mock или результаты через 1 секунду
             guard let self = self else { return } // разворачиваем слабую ссылку
             self.showNextQuestionOrResults()
-            print("Показ следующего вопроса с задержкой")
-
         }
         
     }
@@ -139,59 +169,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         // Если текущий mok был последним
         if currentQuestionIndex == questionsAmount - 1 {
             
-            // Текст в переменную для удобства редактирования
-            let text = correctAnswers == questionsAmount ? "Поздравляем, вы ответили на 10 из 10!" :
-            "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
-            //            "Ваш результат: \(String(correctAnswers))" + "/10"/* + "\n" + "Количество сыгранных квизов: 1" + "\n" + "Рекорд 0/0 (дата время)" + "\n" + "Средняя точность: 00.00%"*/
+            // Создание модели алерта
+            alertModel = alertPresenter.createAlert(cAnswers: correctAnswers, qAmount: correctAnswers)
+            guard let alertModel = alertModel else { return }
             
-            // Задание параметров модели алерта
-            let viewModel = QuizResultsViewModel(
-                title: "Этот раунд окончен!",
-                text: text,
-                buttonText: "Сыграть еще раз")
-            
-            // Вызов метода для показа результатов раунда квиза
-            show(quiz: viewModel)
+            // Вызов метода показа модели алерта
+            self.showAlert(quiz: alertModel)
             
         } else {
             
             // Переход к следующему вопросу
             currentQuestionIndex += 1
             self.questionFactory.requestNextQuestion()
-            print("Переход к следующему вопросу")
         }
     }
-    
-    // Приватный метод для показа результатов раунда квиза
-    // Принимает вью модель QuizResultsViewModel и ничего не возвращает
-    private func show(quiz result: QuizResultsViewModel) {
-        
-        // Константа для алерта
-        let alert = UIAlertController(
-            title: result.title,
-            message: result.text,
-            preferredStyle: .alert)
-        
-        // Константа для caption`а кнопки и действий выполняемых по нажатию на кнопку
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            
-            // разворачиваем слабую ссылку
-            guard let self = self else { return }
-            
-            // Задаем исходные значения для начала нового раунда
-            self.currentQuestionIndex = 0
-            self.correctAnswers = 0
-            
-            questionFactory.requestNextQuestion()
-            print("Начало нового раунда")
-
-        }
-        
-        // Добавление действия к алерту
-        alert.addAction(action)
-        
-        // Показ алерта
-        self.present(alert, animated: true, completion: nil)
-    }
-    
 }
