@@ -27,6 +27,7 @@
 		F7AEA8832B55CB24004CBEC0 /* QuizStepViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AEA8822B55CB24004CBEC0 /* QuizStepViewModel.swift */; };
 		F7AEA8852B55CB3A004CBEC0 /* QuizResultsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AEA8842B55CB3A004CBEC0 /* QuizResultsViewModel.swift */; };
 		F7AEA8872B55CB4C004CBEC0 /* QuizQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AEA8862B55CB4C004CBEC0 /* QuizQuestion.swift */; };
+		F7B6B9332B5E961500DDD150 /* Movie.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B6B9322B5E961500DDD150 /* Movie.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +53,7 @@
 		F7AEA8822B55CB24004CBEC0 /* QuizStepViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizStepViewModel.swift; sourceTree = "<group>"; };
 		F7AEA8842B55CB3A004CBEC0 /* QuizResultsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizResultsViewModel.swift; sourceTree = "<group>"; };
 		F7AEA8862B55CB4C004CBEC0 /* QuizQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizQuestion.swift; sourceTree = "<group>"; };
+		F7B6B9322B5E961500DDD150 /* Movie.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Movie.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +155,7 @@
 				F7AEA8842B55CB3A004CBEC0 /* QuizResultsViewModel.swift */,
 				F7AEA8862B55CB4C004CBEC0 /* QuizQuestion.swift */,
 				F77577962B5A525400681EF4 /* AlertModel.swift */,
+				F7B6B9322B5E961500DDD150 /* Movie.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -237,6 +240,7 @@
 				F76CB00D2B57E0E7005A1039 /* QuestionFactoryDelegate.swift in Sources */,
 				F772BBCF2B596F0D00657B33 /* AlertProtocol.swift in Sources */,
 				AD1ABAB62831907B00B3E448 /* MovieQuizViewController.swift in Sources */,
+				F7B6B9332B5E961500DDD150 /* Movie.swift in Sources */,
 				F7AEA8832B55CB24004CBEC0 /* QuizStepViewModel.swift in Sources */,
 				F7AEA8872B55CB4C004CBEC0 /* QuizQuestion.swift in Sources */,
 				F772BBCD2B596F0100657B33 /* AlertPresenter.swift in Sources */,
