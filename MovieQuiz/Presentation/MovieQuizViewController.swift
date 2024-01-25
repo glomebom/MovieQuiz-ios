@@ -24,24 +24,33 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     private let alertPresenter = AlertPresenter()
     private var alertModel: AlertModel?
     
+    // Экземпляр класса статистики
+    private var statisticService = StatisticServiceImplementation()
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // ЧАСТЬ ПРАКТИЧЕСКОГО ЗАДАНИЯ ПО СПРИНТУ 5 - не используется в итоговом задании
         // Чтение файла inception.json размещенного в директории проекта и вызов метода getMovie()
-        var documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileName = "inception.json"
-        documentsURL.appendPathComponent(fileName)
-        let jsonString = try? String(contentsOf: documentsURL)
-        let movieBase = getMovie(from: jsonString!)
-        print(movieBase!)
-        //
+        //        var documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        //        print(documentsURL)
+        //        let fileName = "inception.json"
+        //        //        let fileName = "top250MoviesIMDB.json"
+        //        documentsURL.appendPathComponent(fileName)
+        //        print(documentsURL)
+        //        let jsonString = try? String(contentsOf: documentsURL)
+        //        guard let movieBase = getMovie(from: jsonString!) else { return }
+        //        print(movieBase)
+        //        // Сериализация movieBase
+        //        if let movieBaseEncode = try? JSONEncoder().encode(movieBase) {
+        //            print(String(data: movieBaseEncode, encoding: .utf8)!)
+        //        }
         
         questionFactory.delegate = self
         questionFactory.requestNextQuestion()
         
         alertPresenter.delegate = self
-        
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -61,8 +70,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     // MARK: - AlertPresenterDelegate
     
     // Метод для показа результатов раунда квиза
-    // Принимает вью модель AlertModel и ничего не возвращает
     func showAlert(quiz result: AlertModel) {
+        
         // Константа для алерта
         let alert = UIAlertController(
             title: result.title,
@@ -122,72 +131,85 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
-    // MARK: - Public functions
+    // ЧАСТЬ ПРАКТИЧЕСКОГО ЗАДАНИЯ ПО СПРИНТУ 5 - не используется в итоговом задании
+    // Метод сериализации в модель Movie версия 1 с протоколом decode
+    //    func getMovie(from jsonString: String) -> Movie? {
+    //        // Форматирование данных
+    //        guard let data = jsonString.data(using: .utf8) else { return nil}
+    //        do {
+    //            // используем метод `JSONSerialization.deocde(...`, который возвращает структуру данных
+    //            let movie = try JSONDecoder().decode(Movie.self, from: data)
+    //            return movie
+    //        } catch {
+    //            print("Failed to parse: \(error.localizedDescription)")
+    //        }
+    //        return nil
+    //    }
     
-    // Метод сериализации в модель Movie
-    func getMovie(from jsonString: String) -> Movie? {
-        var movie: Movie? = nil
-        
-        do {
-            // Форматирование данных
-            guard let data = jsonString.data(using: .utf8) else { return nil}
-            
-            // Сериализация данных
-            let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-            
-            // Присвоение констант для модели Movie из прочитанного файла
-            guard let json = json,
-                  let id = json["id"] as? String,
-                  let title = json["title"] as? String,
-                  let jsonYear = json["year"] as? String,
-                  let year = Int(jsonYear),
-                  let image = json["image"] as? String,
-                  let releaseDate = json["releaseDate"] as? String,
-                  let jsonRuntimeMins = json["runtimeMins"] as? String,
-                  let runtimeMins = Int(jsonRuntimeMins),
-                  let directors = json["directors"] as? String,
-                  let actorList = json["actorList"] as? [Any] else {
-                return nil
-            }
-            
-            // Переменная для массива актеров
-            var actors: [Actor] = []
-            
-            // Цикл по массиву актеров с присвоением полей модели Actor
-            for actor in actorList {
-                guard let actor = actor as? [String: Any],
-                      let id = actor["id"] as? String,
-                      let image = actor["image"] as? String,
-                      let name = actor["name"] as? String,
-                      let asCharacter = actor["asCharacter"] as? String else {
-                    return nil
-                }
-                
-                // Константа для записи прочитанных из массива значений модели Actor
-                let mainActor = Actor(id: id,
-                                      image: image,
-                                      name: name,
-                                      asCharacter: asCharacter)
-                
-                // Добавление записанного элемента модели Actor к массиву актеров
-                actors.append(mainActor)
-            }
-            
-            // Запись значений прочитанных из файла в модель Movie
-            movie = Movie(id: id,
-                          title: title,
-                          year: year,
-                          image: image,
-                          releaseDate: releaseDate,
-                          runtimeMins: runtimeMins,
-                          directors: directors,
-                          actorList: actors)
-        } catch {
-            print("Failed to parse: \(jsonString)")
-        }
-        
-        return movie
-    }
+    // Метод сериализации в модель Movie версия 2
+    //    func getMovie(from jsonString: String) -> Movie? {
+    //        var movie: Movie? = nil
+    //
+    //        do {
+    //            // Форматирование данных
+    //            guard let data = jsonString.data(using: .utf8) else { return nil}
+    //
+    //            // Сериализация данных
+    //            let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+    //
+    //            // Присвоение констант для модели Movie из прочитанного файла
+    //            guard let json = json,
+    //                  let id = json["id"] as? String,
+    //                  let title = json["title"] as? String,
+    //                  let jsonYear = json["year"] as? String,
+    //                  let year = Int(jsonYear),
+    //                  let image = json["image"] as? String,
+    //                  let releaseDate = json["releaseDate"] as? String,
+    //                  let jsonRuntimeMins = json["runtimeMins"] as? String,
+    //                  let runtimeMins = Int(jsonRuntimeMins),
+    //                  let directors = json["directors"] as? String,
+    //                  let actorList = json["actorList"] as? [Any] else {
+    //                return nil
+    //            }
+    //
+    //            // Переменная для массива актеров
+    //            var actors: [Actor] = []
+    //
+    //            // Цикл по массиву актеров с присвоением полей модели Actor
+    //            for actor in actorList {
+    //                guard let actor = actor as? [String: Any],
+    //                      let id = actor["id"] as? String,
+    //                      let image = actor["image"] as? String,
+    //                      let name = actor["name"] as? String,
+    //                      let asCharacter = actor["asCharacter"] as? String else {
+    //                    return nil
+    //                }
+    //
+    //                // Константа для записи прочитанных из массива значений модели Actor
+    //                let mainActor = Actor(id: id,
+    //                                      image: image,
+    //                                      name: name,
+    //                                      asCharacter: asCharacter)
+    //
+    //                // Добавление записанного элемента модели Actor к массиву актеров
+    //                actors.append(mainActor)
+    //            }
+    //
+    //            // Запись значений прочитанных из файла в модель Movie
+    //            movie = Movie(id: id,
+    //                          title: title,
+    //                          year: year,
+    //                          image: image,
+    //                          releaseDate: releaseDate,
+    //                          runtimeMins: runtimeMins,
+    //                          directors: directors,
+    //                          actorList: actors)
+    //        } catch {
+    //            print("Failed to parse: \(jsonString)")
+    //        }
+    //
+    //        return movie
+    //    }
     
     
     // MARK: - Private functions
@@ -244,8 +266,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         // Если текущий mok был последним
         if currentQuestionIndex == questionsAmount - 1 {
             
+            //Сохранение лучшего результата квиза и увеличение счетчиков статистики
+            statisticService.store(correct: correctAnswers, total: questionsAmount)
+            
+            // Текст алерта по результатам квиза
+            let text =  "Ваш результат: \(String(correctAnswers))" + "/10" + "\n" + "Количество сыгранных квизов: \(statisticService.gamesCount)" + "\n" + "Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))" + "\n" + "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+            
             // Создание модели алерта
-            alertModel = alertPresenter.createAlert(cAnswers: correctAnswers, qAmount: correctAnswers)
+            alertModel = alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
             guard let alertModel = alertModel else { return }
             
             // Вызов метода показа модели алерта
