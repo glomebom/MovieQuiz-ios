@@ -17,7 +17,7 @@ protocol StatisticService {
     func store(correct count: Int, total amount: Int)
 }
 
-class StatisticServiceImplementation: StatisticService {
+final class StatisticServiceImplementation: StatisticService {
     private enum Keys: String {
         case correct, total, bestGame, gamesCount, totalCorrectAnswers, totalAmount
     }

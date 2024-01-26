@@ -25,7 +25,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     private var alertModel: AlertModel?
     
     // Экземпляр класса статистики
-    private var statisticService = StatisticServiceImplementation()
+    private var statisticService: StatisticService = StatisticServiceImplementation()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -65,6 +65,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
+        
+        // Включение кнопок
+        yesButton.isEnabled = true
+        noButton.isEnabled = true
     }
     
     // MARK: - AlertPresenterDelegate
@@ -104,6 +108,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     // Приватный метод выполняемый при нажатии кнопки ДА
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         
+        // Отключение кнопок
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+
         // Константа для хранения данных из текущего mock`а
         guard let currentQuestion = currentQuestion else {
             return
@@ -118,6 +126,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // Приватный метод выполняемый при нажатии кнопки НЕТ
     @IBAction private func noButtonClicked(_ sender: UIButton) {
+        
+        // Отключение кнопок
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
         
         // Константа для хранения данных из текущего mock`а
         guard let currentQuestion = currentQuestion else {
@@ -257,7 +269,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             guard let self = self else { return } // разворачиваем слабую ссылку
             self.showNextQuestionOrResults()
         }
-        
     }
     
     // Приватный метод показ следующего mock`а или результатов

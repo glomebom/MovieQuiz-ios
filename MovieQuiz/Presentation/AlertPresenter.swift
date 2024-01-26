@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AlertPresenter {
+final class AlertPresenter {
     
     weak var delegate: AlertPresenterDelegate?
     
