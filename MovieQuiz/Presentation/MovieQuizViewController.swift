@@ -8,6 +8,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     @IBOutlet weak private var textLabel: UILabel!
     @IBOutlet weak private var yesButton: UIButton!
     @IBOutlet weak private var noButton: UIButton!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     // Переменная-счетчик текущего вопроса
     private var currentQuestionIndex: Int = 0
@@ -17,7 +18,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     private let questionsAmount: Int = 10
     
     // Константа и переменная для фабрики вопросов
-    private let questionFactory: QuestionFactoryProtocol = QuestionFactory()
+    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
     // Константа и переменная для показа алерта
@@ -47,10 +48,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         //            print(String(data: movieBaseEncode, encoding: .utf8)!)
         //        }
         
-        questionFactory.delegate = self
-        questionFactory.requestNextQuestion()
+        // Делегаты фабрики вопросов
+        //questionFactory.delegate = self
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        //questionFactory.requestNextQuestion()
         
+        // Делегат класса показа алерта
         alertPresenter.delegate = self
+        
+        showLoadingIndicator()
+        questionFactory?.loadData()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -69,6 +76,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         // Включение кнопок
         yesButton.isEnabled = true
         noButton.isEnabled = true
+    }
+    
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true // Скрываем индикатор загрузки
+        //questionFactory.requestNextQuestion() // Запрашиваем следующий вопрос
+        questionFactory?.loadData()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        // Вызываем метод показа алерта с ошибкой, в сообщение для алерта передаем текст ошибки
+        showNetworkError(message: error.localizedDescription)
     }
     
     // MARK: - AlertPresenterDelegate
@@ -93,7 +111,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             self.correctAnswers = 0
             
             // Начало нового раунда
-            questionFactory.requestNextQuestion()
+            //questionFactory.requestNextQuestion()
+            questionFactory?.loadData()
         }
         
         // Добавление действия к алерту
@@ -111,7 +130,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         // Отключение кнопок
         yesButton.isEnabled = false
         noButton.isEnabled = false
-
+        
         // Константа для хранения данных из текущего mock`а
         guard let currentQuestion = currentQuestion else {
             return
@@ -226,10 +245,53 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // MARK: - Private functions
     
+    // Метод показа индикатора загрузки
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    // Метод сокрытия индикатора загрузки
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    
+    // Метод показа ошибки
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        // Константа для алерта, message берем из ошибки error.localizedDescription
+        let alert = AlertModel(title: "Ошибка", text: message, buttonText: "Попробовать ещё раз")
+        
+        // Вызов метода показа алерта с попыткой загрузки данных
+        self.showAlert(quiz: alert)
+        
+        //        АВТОРСКОЕ РЕШЕНИЕ
+        //        private func showNetworkError(message: String) {
+        //            hideLoadingIndicator()
+        //
+        //            let model = AlertModel(title: "Ошибка",
+        //                                   message: message,
+        //                                   buttonText: "Попробовать еще раз") { [weak self] in
+        //                guard let self = self else { return }
+        //
+        //                self.currentQuestionIndex = 0
+        //                self.correctAnswers = 0
+        //
+        //                self.questionFactory?.requestNextQuestion()
+        //            }
+        //
+        //            alertPresenter.show(in: self, model: model)
+        //        }
+        //
+        
+    }
+    
     // Приватный метод конвертации mock`а в view-модель
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
+        
         let questionStep = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
@@ -294,7 +356,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             
             // Переход к следующему вопросу
             currentQuestionIndex += 1
-            self.questionFactory.requestNextQuestion()
+            //self.questionFactory.requestNextQuestion()
+            self.questionFactory?.loadData()
         }
     }
 }
