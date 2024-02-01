@@ -26,7 +26,7 @@ struct MostPopularMovie: Codable {
 //    }
     
     let title: String
-    let rating: String //Int//
+    let rating: String//String //Int//
     let imageURL: URL //Data//
     
     init(from decoder: Decoder) throws {
@@ -36,7 +36,7 @@ struct MostPopularMovie: Codable {
         self.rating = try container.decode(String.self, forKey: .rating)
         // Преобразование String -> Int
 //        let rating = try container.decode(String.self, forKey: .rating)
-//        guard let ratingValue = Int(rating) else {
+//        guard let ratingValue = Float(rating) else {
 //            throw ParseError.ratingFailure
 //        }
 //        self.rating = ratingValue
