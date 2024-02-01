@@ -5,9 +5,26 @@
 //  Created by Gleb on 30.01.2024.
 //
 
+//{"id":"tt2356777",
+//    "rank":"1",
+//    "rankUpDown":"0",
+//    "title":"True Detective",
+//    "fullTitle":"True Detective (TV Series 2014–)",
+//    "year":"2014",
+//    "image":"https://m.media-amazon.com/images/M/MV5BNTEzMzBiNGYtYThiZS00MzBjLTk5ZWItM2FmMzU3Y2RjYTVlXkEyXkFqcGdeQXVyMjkwOTAyMDU@._V1_Ratio0.6763_AL_.jpg",
+//    "crew":"",
+//    "imDbRating":"8.9",
+//    "imDbRatingCount":"630193"
+//}
+
 import Foundation
 
 struct MostPopularMovies: Codable {
+    
+    private enum Keys: CodingKey {
+        case errorMessage, items
+    }
+    
     let errorMessage: String
     let items: [MostPopularMovie]
     
@@ -24,6 +41,12 @@ struct MostPopularMovie: Codable {
 //        case ratingFailure
 //        case imageURLFailure
 //    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case title = "fullTitle"
+        case rating = "imDbRating"
+        case imageURL = "image"
+    }
     
     let title: String
     let rating: String//String //Int//
@@ -46,12 +69,6 @@ struct MostPopularMovie: Codable {
 //        let imageURL = try container.decode(URL.self, forKey: .imageURL)
 //        let imageData = try Data(contentsOf: imageURL)
 //        self.imageURL = imageData
-    }
-    
-    private enum CodingKeys: String, CodingKey {
-        case title = "fullTitle"
-        case rating = "imDbRating"
-        case imageURL = "image"
     }
 }
 
