@@ -71,9 +71,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     func didFailToLoadData(with error: Error) {
         // Вызываем метод показа алерта с ошибкой, в сообщение для алерта передаем текст ошибки
-        
-        print("\(error)")
-        
         showNetworkError(message: error.localizedDescription)
     }
     

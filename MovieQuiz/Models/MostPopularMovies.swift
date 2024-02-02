@@ -37,33 +37,37 @@ struct MostPopularMovie: Codable {
     }
     
     let title: String
-    let rating: String//String
-    let imageURL: URL //Data
+    let rating: String
+    let imageURL: URL
+    
+    var resizedImage: URL {
+        // Создание строки из адреса
+        let urlString = imageURL.absoluteString
+        // Изменение окончания строки
+        let imageUrlString = urlString.components(separatedBy: "._")[0] + "._V0_UX600_.jpg"
+        
+        // Создаем новый URL
+        guard let newURL = URL(string: imageUrlString) else {
+            return imageURL
+        }
+        
+        // Возвращаем новый URL
+        return newURL
+    }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.title = try container.decode(String.self, forKey: .title)
         
-        //        self.rating = try container.decode(String.self, forKey: .rating)
-        
+        //self.rating = try container.decode(String.self, forKey: .rating)
+        // Для случая когда rating в у фильма nil
         if let rating = try? container.decode(String.self, forKey: .rating) {
             self.rating = rating
         } else {
             self.rating = "0"
         }
-        
-        // Преобразование String -> Int
-        //        let rating = try container.decode(String.self, forKey: .rating)
-        //        guard let ratingValue = String(rating) else {
-        //            throw ParseError.ratingFailure
-        //        }
-        //        self.rating = ratingValue
-        
+
         self.imageURL = try container.decode(URL.self, forKey: .imageURL)
-        // Преобразование URL -> Data
-        //        let imageURL = try container.decode(URL.self, forKey: .imageURL)
-        //        let imageData = try Data(contentsOf: imageURL)
-        //        self.imageURL = imageData
     }
 }
 

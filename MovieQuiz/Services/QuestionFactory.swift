@@ -45,7 +45,8 @@ final class QuestionFactory: QuestionFactoryProtocol {
             // Загрузка данных по ссылке
             var imageData = Data()
             do {
-                imageData = try Data(contentsOf: movie.imageURL)
+                // Загрузка увеличенной картинки с помощью метода вычисляемого значения resizedImage
+                imageData = try Data(contentsOf: movie.resizedImage)
             } catch {
                 print("Failed to load image")
             }
