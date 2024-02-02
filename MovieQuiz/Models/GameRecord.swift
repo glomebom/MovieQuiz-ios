@@ -30,7 +30,7 @@ struct GameRecord: Codable {
         self.date = try container.decode(Date.self, forKey: .date)
     }
     
-    // метод сравнения по количеству верных ответов
+    // Метод сравнения по количеству верных ответов
     func isBetterThan(_ another: GameRecord) -> Bool {
         correct < another.correct
     }

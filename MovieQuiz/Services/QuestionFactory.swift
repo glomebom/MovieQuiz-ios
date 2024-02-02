@@ -50,10 +50,11 @@ final class QuestionFactory: QuestionFactoryProtocol {
                 print("Failed to load image")
             }
             
-            // Определяем рейтинг // рейтинг был разным для каждого вопроса
+            // Определяем рейтинг, рейтинг разный для каждого вопроса
             let rating = Float(movie.rating) ?? 0
-            let text = "Рейтинг этого фильма больше чем 7?"
-            let correctAnswer = rating > 7
+            let randomRating = Int.random(in: 5..<10)
+            let text = "Рейтинг этого фильма больше чем \(randomRating)?"
+            let correctAnswer = rating > Float(randomRating)
             let question = QuizQuestion(image: imageData,
                                         text: text,
                                         correctAnswer: correctAnswer)
@@ -64,26 +65,6 @@ final class QuestionFactory: QuestionFactoryProtocol {
                 self.delegate?.didReceiveNextQuestion(question: question)
             }
         }
-        
-        // ПРЕДЫДУЩАЯ ВЕРСИЯ МЕТОДА
-        //        guard let index = (0..<movies.count).randomElement() else {
-        //            delegate?.didReceiveNextQuestion(question: nil)
-        //            return
-        //        }
-        //
-        //        let question = movies[safe: index]
-        
-        //let questionMovie = movies[safe: index]
-        
-        // Т.к. модели разные нужно приводить типы
-        // Рейтинг переводим из String -> Int и вычисляем ответ в сравнении
-        //        guard let rating = questionMovie?.rating as? Int else { return }
-        //        let answer = rating > 6 ? true : false
-        //
-        //        // Передаем в метод показа значения из модели MostPopularMovie
-        //        let question: QuizQuestion = QuizQuestion(image: questionMovie?.imageURL ?? Data(), text: questionMovie?.title ?? String(), correctAnswer: answer)
-        
-        //        delegate?.didReceiveNextQuestion(question: question)
     }
 }
 

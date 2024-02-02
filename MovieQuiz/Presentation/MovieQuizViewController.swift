@@ -32,31 +32,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // ЧАСТЬ ПРАКТИЧЕСКОГО ЗАДАНИЯ ПО СПРИНТУ 5 - не используется в итоговом задании
-        // Чтение файла inception.json размещенного в директории проекта и вызов метода getMovie()
-        //        var documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        //        print(documentsURL)
-        //        let fileName = "inception.json"
-        //        //        let fileName = "top250MoviesIMDB.json"
-        //        documentsURL.appendPathComponent(fileName)
-        //        print(documentsURL)
-        //        let jsonString = try? String(contentsOf: documentsURL)
-        //        guard let movieBase = getMovie(from: jsonString!) else { return }
-        //        print(movieBase)
-        //        // Сериализация movieBase
-        //        if let movieBaseEncode = try? JSONEncoder().encode(movieBase) {
-        //            print(String(data: movieBaseEncode, encoding: .utf8)!)
-        //        }
-        
-        // Делегаты фабрики вопросов
-        //questionFactory.delegate = self
+        // Делегат фабрики вопросов
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
-        //questionFactory.requestNextQuestion()
         
         // Делегат класса показа алерта
         alertPresenter.delegate = self
         
+        // Показ индикатора
         showLoadingIndicator()
+        
+        // Загрузка данных
         questionFactory?.loadData()
     }
     
@@ -80,13 +65,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     func didLoadDataFromServer() {
         activityIndicator.isHidden = true // Скрываем индикатор загрузки
-        //questionFactory.requestNextQuestion() // Запрашиваем следующий вопрос
-        questionFactory?.loadData()
+        
+        questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
     }
     
     func didFailToLoadData(with error: Error) {
         // Вызываем метод показа алерта с ошибкой, в сообщение для алерта передаем текст ошибки
+        
         print("\(error)")
+        
         showNetworkError(message: error.localizedDescription)
     }
     
@@ -111,9 +98,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
-            // Начало нового раунда
-            //questionFactory.requestNextQuestion()
-            questionFactory?.loadData()
+            questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
         }
         
         // Добавление действия к алерту
@@ -163,87 +148,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
-    // ЧАСТЬ ПРАКТИЧЕСКОГО ЗАДАНИЯ ПО СПРИНТУ 5 - не используется в итоговом задании
-    // Метод сериализации в модель Movie версия 1 с протоколом decode
-    //    func getMovie(from jsonString: String) -> Movie? {
-    //        // Форматирование данных
-    //        guard let data = jsonString.data(using: .utf8) else { return nil}
-    //        do {
-    //            // используем метод `JSONSerialization.deocde(...`, который возвращает структуру данных
-    //            let movie = try JSONDecoder().decode(Movie.self, from: data)
-    //            return movie
-    //        } catch {
-    //            print("Failed to parse: \(error.localizedDescription)")
-    //        }
-    //        return nil
-    //    }
-    
-    // Метод сериализации в модель Movie версия 2
-    //    func getMovie(from jsonString: String) -> Movie? {
-    //        var movie: Movie? = nil
-    //
-    //        do {
-    //            // Форматирование данных
-    //            guard let data = jsonString.data(using: .utf8) else { return nil}
-    //
-    //            // Сериализация данных
-    //            let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-    //
-    //            // Присвоение констант для модели Movie из прочитанного файла
-    //            guard let json = json,
-    //                  let id = json["id"] as? String,
-    //                  let title = json["title"] as? String,
-    //                  let jsonYear = json["year"] as? String,
-    //                  let year = Int(jsonYear),
-    //                  let image = json["image"] as? String,
-    //                  let releaseDate = json["releaseDate"] as? String,
-    //                  let jsonRuntimeMins = json["runtimeMins"] as? String,
-    //                  let runtimeMins = Int(jsonRuntimeMins),
-    //                  let directors = json["directors"] as? String,
-    //                  let actorList = json["actorList"] as? [Any] else {
-    //                return nil
-    //            }
-    //
-    //            // Переменная для массива актеров
-    //            var actors: [Actor] = []
-    //
-    //            // Цикл по массиву актеров с присвоением полей модели Actor
-    //            for actor in actorList {
-    //                guard let actor = actor as? [String: Any],
-    //                      let id = actor["id"] as? String,
-    //                      let image = actor["image"] as? String,
-    //                      let name = actor["name"] as? String,
-    //                      let asCharacter = actor["asCharacter"] as? String else {
-    //                    return nil
-    //                }
-    //
-    //                // Константа для записи прочитанных из массива значений модели Actor
-    //                let mainActor = Actor(id: id,
-    //                                      image: image,
-    //                                      name: name,
-    //                                      asCharacter: asCharacter)
-    //
-    //                // Добавление записанного элемента модели Actor к массиву актеров
-    //                actors.append(mainActor)
-    //            }
-    //
-    //            // Запись значений прочитанных из файла в модель Movie
-    //            movie = Movie(id: id,
-    //                          title: title,
-    //                          year: year,
-    //                          image: image,
-    //                          releaseDate: releaseDate,
-    //                          runtimeMins: runtimeMins,
-    //                          directors: directors,
-    //                          actorList: actors)
-    //        } catch {
-    //            print("Failed to parse: \(jsonString)")
-    //        }
-    //
-    //        return movie
-    //    }
-    
-    
     // MARK: - Private functions
     
     // Метод показа индикатора загрузки
@@ -266,26 +170,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         
         // Вызов метода показа алерта с попыткой загрузки данных
         self.showAlert(quiz: alert)
-        
-        //        АВТОРСКОЕ РЕШЕНИЕ
-        //        private func showNetworkError(message: String) {
-        //            hideLoadingIndicator()
-        //
-        //            let model = AlertModel(title: "Ошибка",
-        //                                   message: message,
-        //                                   buttonText: "Попробовать еще раз") { [weak self] in
-        //                guard let self = self else { return }
-        //
-        //                self.currentQuestionIndex = 0
-        //                self.correctAnswers = 0
-        //
-        //                self.questionFactory?.requestNextQuestion()
-        //            }
-        //
-        //            alertPresenter.show(in: self, model: model)
-        //        }
-        //
-        
     }
     
     // Приватный метод конвертации mock`а в view-модель
@@ -357,8 +241,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             
             // Переход к следующему вопросу
             currentQuestionIndex += 1
-            //self.questionFactory.requestNextQuestion()
-            self.questionFactory?.loadData()
+            
+            self.questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
         }
     }
 }

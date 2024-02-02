@@ -5,18 +5,6 @@
 //  Created by Gleb on 30.01.2024.
 //
 
-//{"id":"tt2356777",
-//    "rank":"1",
-//    "rankUpDown":"0",
-//    "title":"True Detective",
-//    "fullTitle":"True Detective (TV Series 2014–)",
-//    "year":"2014",
-//    "image":"https://m.media-amazon.com/images/M/MV5BNTEzMzBiNGYtYThiZS00MzBjLTk5ZWItM2FmMzU3Y2RjYTVlXkEyXkFqcGdeQXVyMjkwOTAyMDU@._V1_Ratio0.6763_AL_.jpg",
-//    "crew":"",
-//    "imDbRating":"8.9",
-//    "imDbRatingCount":"630193"
-//}
-
 import Foundation
 
 struct MostPopularMovies: Codable {
@@ -37,10 +25,10 @@ struct MostPopularMovies: Codable {
 
 struct MostPopularMovie: Codable {
     // создаём кастомный enum для обработки ошибок
-//    enum ParseError: Error {
-//        case ratingFailure
-//        case imageURLFailure
-//    }
+    enum ParseError: Error {
+        case ratingFailure
+        case imageURLFailure
+    }
     
     private enum CodingKeys: String, CodingKey {
         case title = "fullTitle"
@@ -49,26 +37,33 @@ struct MostPopularMovie: Codable {
     }
     
     let title: String
-    let rating: String//String //Int//
-    let imageURL: URL //Data//
+    let rating: String//String
+    let imageURL: URL //Data
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.title = try container.decode(String.self, forKey: .title)
         
-        self.rating = try container.decode(String.self, forKey: .rating)
+        //        self.rating = try container.decode(String.self, forKey: .rating)
+        
+        if let rating = try? container.decode(String.self, forKey: .rating) {
+            self.rating = rating
+        } else {
+            self.rating = "0"
+        }
+        
         // Преобразование String -> Int
-//        let rating = try container.decode(String.self, forKey: .rating)
-//        guard let ratingValue = Float(rating) else {
-//            throw ParseError.ratingFailure
-//        }
-//        self.rating = ratingValue
+        //        let rating = try container.decode(String.self, forKey: .rating)
+        //        guard let ratingValue = String(rating) else {
+        //            throw ParseError.ratingFailure
+        //        }
+        //        self.rating = ratingValue
         
         self.imageURL = try container.decode(URL.self, forKey: .imageURL)
         // Преобразование URL -> Data
-//        let imageURL = try container.decode(URL.self, forKey: .imageURL)
-//        let imageData = try Data(contentsOf: imageURL)
-//        self.imageURL = imageData
+        //        let imageURL = try container.decode(URL.self, forKey: .imageURL)
+        //        let imageData = try Data(contentsOf: imageURL)
+        //        self.imageURL = imageData
     }
 }
 

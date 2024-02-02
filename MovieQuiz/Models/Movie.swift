@@ -33,7 +33,7 @@ struct Actor: Codable {
 // Модель для хранения информации о фильмах
 struct Movie: Codable {
     
-    // создаём кастомный enum для обработки ошибок
+    // Создаём кастомный enum для обработки ошибок
     enum ParseError: Error {
         case yearFailure
         case runtimeMinsFailure
@@ -53,7 +53,7 @@ struct Movie: Codable {
     let actorList: [Actor]
     
     init(from decoder: Decoder) throws {
-        // создаём контейнер, в котором будут содержаться все поля будущей структуры; оттуда мы и достанем значения по ключам
+        // Cоздаём контейнер, в котором будут содержаться все поля будущей структуры; оттуда мы и достанем значения по ключам
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         // Инициализируем свойства структуры через контейнер
