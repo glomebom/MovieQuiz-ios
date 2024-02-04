@@ -39,7 +39,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         alertPresenter.delegate = self
         
         // Показ индикатора
-        showLoadingIndicator()
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.startAnimating()
         
         // Загрузка данных
         questionFactory?.loadData()
@@ -59,12 +60,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         }
         
         // Включение кнопок
-        yesButton.isEnabled = true
-        noButton.isEnabled = true
+        changeStateButtons(isEnabled: true)
     }
     
     func didLoadDataFromServer() {
-        activityIndicator.isHidden = true // Скрываем индикатор загрузки
+        // Скрытие индикатора
+        activityIndicator.stopAnimating()
         
         questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
     }
@@ -111,8 +112,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         
         // Отключение кнопок
-        yesButton.isEnabled = false
-        noButton.isEnabled = false
+        changeStateButtons(isEnabled: false)
         
         // Константа для хранения данных из текущего mock`а
         guard let currentQuestion = currentQuestion else {
@@ -130,8 +130,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         
         // Отключение кнопок
-        yesButton.isEnabled = false
-        noButton.isEnabled = false
+        changeStateButtons(isEnabled: false)
         
         // Константа для хранения данных из текущего mock`а
         guard let currentQuestion = currentQuestion else {
@@ -147,23 +146,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // MARK: - Private functions
     
-    // Метод показа индикатора загрузки
-    private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-    }
-    
-    // Метод сокрытия индикатора загрузки
-    private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
-        activityIndicator.stopAnimating()
-    }
-    
     // Метод показа ошибки
     private func showNetworkError(message: String) {
-        hideLoadingIndicator()
+        // Скрытие индикатора
+        activityIndicator.stopAnimating()
         // Константа для алерта, message берем из ошибки error.localizedDescription
-        let alert = AlertModel(title: "Ошибка", text: message, buttonText: "Попробовать ещё раз")
+        let alert = AlertModel(title: "Ошибка",
+                               text: message,
+                               buttonText: "Попробовать ещё раз")
         
         // Вызов метода показа алерта с попыткой загрузки данных
         self.showAlert(quiz: alert)
@@ -179,10 +169,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         return questionStep
     }
     
-    // Приватный метод показа mock`а на экране
+    // Приватный метод показа вопроса на экране
     private func show(quiz step: QuizStepViewModel) {
         
-        // Задание значений элементам экран из view-модели mock`а
+        // Задание значений элементам экран из view-модели
         counterLabel.text = step.questionNumber
         imageView.image = step.image
         textLabel.text = step.question
@@ -239,7 +229,19 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             // Переход к следующему вопросу
             currentQuestionIndex += 1
             
+            // Показ индикатора
+            activityIndicator.startAnimating()
+            
             self.questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
+            
+            // Скрытие индикатора
+            activityIndicator.stopAnimating()
         }
     }
+    
+    // Приватный метод включения/отключения кнопок
+    private func changeStateButtons(isEnabled: Bool) {
+            yesButton.isEnabled = isEnabled
+            noButton.isEnabled = isEnabled
+        }
 }

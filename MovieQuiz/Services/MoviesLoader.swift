@@ -35,7 +35,6 @@ struct MoviesLoader: MoviesLoading {
             case .success(let data):
                 do { // Пробуем декодировать данные в структуру модели MostPopularMovies c полем ошибки и массивом объектов класса MostPopularMovie
                     let mostPopularMovies = try JSONDecoder().decode(MostPopularMovies.self, from: data)
-                    // Если вернулся код success отдаем структуру MostPopularMovies в замыкание
                     handler(.success(mostPopularMovies))
                 } catch { // Иначе отдаем в замыкание ошибку действия по которой описаны в структуре сетевого запроса
                     handler(.failure(error))
