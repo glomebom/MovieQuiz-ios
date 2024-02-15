@@ -15,6 +15,8 @@ final class MovieQuizPresenter {
     private var currentQuestionIndex: Int = 0
     
     var currentQuestion: QuizQuestion?
+    
+    // Ссылка на контроллер для передачи данных и обращения
     weak var viewController: MovieQuizViewController?
     
     func yesButtonClicked() {
@@ -25,7 +27,9 @@ final class MovieQuizPresenter {
         didAnswer(isYes: false)
         
     }
+    
     private func didAnswer(isYes: Bool) {
+        
         // Отключение кнопок
         changeStateButtons(isEnabled: false)
         
@@ -45,6 +49,21 @@ final class MovieQuizPresenter {
     private func changeStateButtons(isEnabled: Bool) {
         viewController?.yesButton.isEnabled = isEnabled
         viewController?.noButton.isEnabled = isEnabled
+    }
+    
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+        
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.show(quiz: viewModel)
+        }
+        
+        // Включение кнопок
+        changeStateButtons(isEnabled: true)
     }
     
     // Метод проверки на последний вопрос

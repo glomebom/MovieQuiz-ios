@@ -15,7 +15,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // Константа и переменная для фабрики вопросов
     private var questionFactory: QuestionFactoryProtocol?
-    private var currentQuestion: QuizQuestion?
     
     // Константа и переменная для показа алерта
     private let alertPresenter = AlertPresenter()
@@ -50,18 +49,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     // MARK: - QuestionFactoryDelegate
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
-        
-        currentQuestion = question
-        let viewModel = presenter.convert(model: question)
-        DispatchQueue.main.async { [weak self] in
-            self?.show(quiz: viewModel)
-        }
-        
-        // Включение кнопок
-        //changeStateButtons(isEnabled: true)
+        presenter.didReceiveNextQuestion(question: question)
     }
     
     func didLoadDataFromServer() {
@@ -110,13 +98,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // Приватный метод выполняемый при нажатии кнопки ДА
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        presenter.currentQuestion = currentQuestion
         presenter.yesButtonClicked()
     }
     
     // Приватный метод выполняемый при нажатии кнопки НЕТ
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        presenter.currentQuestion = currentQuestion
         presenter.yesButtonClicked()
     }
     
@@ -139,8 +125,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         self.showAlert(quiz: alert)
     }
     
-    // Приватный метод показа вопроса на экране
-    private func show(quiz step: QuizStepViewModel) {
+    // Метод показа вопроса на экране
+    func show(quiz step: QuizStepViewModel) {
         
         // Задание значений элементам экран из view-модели
         counterLabel.text = step.questionNumber
