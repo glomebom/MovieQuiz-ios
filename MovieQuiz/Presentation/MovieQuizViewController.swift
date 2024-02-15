@@ -6,11 +6,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     @IBOutlet weak private var counterLabel: UILabel!
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var textLabel: UILabel!
-    @IBOutlet weak private var yesButton: UIButton!
-    @IBOutlet weak private var noButton: UIButton!
+    @IBOutlet weak var yesButton: UIButton!
+    @IBOutlet weak var noButton: UIButton!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
-//    // Переменная-счетчик количества правильных ответов
+    //    // Переменная-счетчик количества правильных ответов
     private var correctAnswers: Int = 0
     
     // Константа и переменная для фабрики вопросов
@@ -43,6 +43,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         
         // Загрузка данных
         questionFactory?.loadData()
+        
+        presenter.viewController = self
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -59,7 +61,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         }
         
         // Включение кнопок
-        changeStateButtons(isEnabled: true)
+        //changeStateButtons(isEnabled: true)
     }
     
     func didLoadDataFromServer() {
@@ -108,38 +110,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // Приватный метод выполняемый при нажатии кнопки ДА
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        
-        // Отключение кнопок
-        changeStateButtons(isEnabled: false)
-        
-        // Константа для хранения данных из текущего mock`а
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        
-        // Константа для записи значения ответа пользователя на вопрос
-        let givenAnswer = true
-        
-        // Вызов метода проверки правильности ответа на вопрос
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonClicked()
     }
     
     // Приватный метод выполняемый при нажатии кнопки НЕТ
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        
-        // Отключение кнопок
-        changeStateButtons(isEnabled: false)
-        
-        // Константа для хранения данных из текущего mock`а
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        
-        // Константа для записи значения ответа пользователя на вопрос
-        let givenAnswer = false
-        
-        // Вызов метода проверки правильности ответа на вопрос
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonClicked()
     }
     
     // MARK: - Private functions
@@ -160,7 +138,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         // Вызов метода показа алерта с попыткой загрузки данных
         self.showAlert(quiz: alert)
     }
-
+    
     // Приватный метод показа вопроса на экране
     private func show(quiz step: QuizStepViewModel) {
         
@@ -174,7 +152,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     }
     
     // Приватный метод проверки ответа на вопрос
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         // Параметры рамки изображения
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
@@ -233,10 +211,4 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             activityIndicator.stopAnimating()
         }
     }
-    
-    // Приватный метод включения/отключения кнопок
-    private func changeStateButtons(isEnabled: Bool) {
-            yesButton.isEnabled = isEnabled
-            noButton.isEnabled = isEnabled
-        }
 }

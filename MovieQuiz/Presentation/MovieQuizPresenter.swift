@@ -14,6 +14,39 @@ final class MovieQuizPresenter {
     // Переменная-счетчик количества правильных ответов
     private var currentQuestionIndex: Int = 0
     
+    var currentQuestion: QuizQuestion?
+    weak var viewController: MovieQuizViewController?
+    
+    func yesButtonClicked() {
+        didAnswer(isYes: true)
+    }
+    
+    func noButtonClicked(_ sender: UIButton) {
+        didAnswer(isYes: false)
+        
+    }
+    private func didAnswer(isYes: Bool) {
+        // Отключение кнопок
+        changeStateButtons(isEnabled: false)
+        
+        // Константа для хранения данных из текущего mock`а
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+        
+        // Константа для записи значения ответа пользователя на вопрос
+        let givenAnswer = isYes
+        
+        // Вызов метода проверки правильности ответа на вопрос
+        viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+    }
+    
+    // Приватный метод включения/отключения кнопок
+    private func changeStateButtons(isEnabled: Bool) {
+        viewController?.yesButton.isEnabled = isEnabled
+        viewController?.noButton.isEnabled = isEnabled
+    }
+    
     // Метод проверки на последний вопрос
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
