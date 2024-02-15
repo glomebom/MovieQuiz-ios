@@ -10,12 +10,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     @IBOutlet weak private var noButton: UIButton!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
-    // Переменная-счетчик текущего вопроса
-    private var currentQuestionIndex: Int = 0
-    // Переменная-счетчик количества правильных ответов
+//    // Переменная-счетчик количества правильных ответов
     private var correctAnswers: Int = 0
-    // Количество вопросов
-    private let questionsAmount: Int = 10
     
     // Константа и переменная для фабрики вопросов
     private var questionFactory: QuestionFactoryProtocol?
@@ -27,6 +23,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // Экземпляр класса статистики
     private var statisticService: StatisticService = StatisticServiceImplementation()
+    
+    // Экземпляр класса MovieQuizPresenter
+    private let presenter = MovieQuizPresenter()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -54,7 +53,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         }
         
         currentQuestion = question
-        let viewModel = convert(model: question)
+        let viewModel = presenter.convert(model: question)
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
@@ -92,15 +91,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             // разворачиваем слабую ссылку
             guard let self = self else { return }
             
-            // Задаем исходные значения для начала нового раунда
-            self.currentQuestionIndex = 0
-            self.correctAnswers = 0
-            
             questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
         }
         
         // Добавление действия к алерту
         alert.addAction(action)
+        
+        // Указание идентификатора для теста алерта
+        alert.view.accessibilityIdentifier = "alertWindow"
         
         // Показ алерта
         self.present(alert, animated: true, completion: nil)
@@ -155,20 +153,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
                                text: message,
                                buttonText: "Попробовать ещё раз")
         
+        // Сброс значений счетчиков
+        self.correctAnswers = 0
+        self.presenter.resetQuestionIndex()
+        
         // Вызов метода показа алерта с попыткой загрузки данных
         self.showAlert(quiz: alert)
     }
-    
-    // Приватный метод конвертации mock`а в view-модель
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        
-        let questionStep = QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-        return questionStep
-    }
-    
+
     // Приватный метод показа вопроса на экране
     private func show(quiz step: QuizStepViewModel) {
         
@@ -183,7 +175,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // Приватный метод проверки ответа на вопрос
     private func showAnswerResult(isCorrect: Bool) {
-        
         // Параметры рамки изображения
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
@@ -209,25 +200,29 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     private func showNextQuestionOrResults() {
         
         // Если текущий mok был последним
-        if currentQuestionIndex == questionsAmount - 1 {
+        if presenter.isLastQuestion() {
             
             //Сохранение лучшего результата квиза и увеличение счетчиков статистики
-            statisticService.store(correct: correctAnswers, total: questionsAmount)
+            statisticService.store(correct: correctAnswers, total: presenter.questionsAmount)
             
             // Текст алерта по результатам квиза
             let text =  "Ваш результат: \(String(correctAnswers))" + "/10" + "\n" + "Количество сыгранных квизов: \(statisticService.gamesCount)" + "\n" + "Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))" + "\n" + "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
             
             // Создание модели алерта
-            alertModel = alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
+            alertModel = alertPresenter.createAlert(correct: correctAnswers, total: presenter.questionsAmount, message: text)
             guard let alertModel = alertModel else { return }
             
             // Вызов метода показа модели алерта
             self.showAlert(quiz: alertModel)
             
+            // Сброс значений счетчиков
+            self.correctAnswers = 0
+            self.presenter.resetQuestionIndex()
+            
         } else {
             
             // Переход к следующему вопросу
-            currentQuestionIndex += 1
+            presenter.switchToTheNextQuestion()
             
             // Показ индикатора
             activityIndicator.startAnimating()
