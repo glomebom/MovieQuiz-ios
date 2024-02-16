@@ -20,7 +20,7 @@ final class MovieQuizViewController: UIViewController/*, QuestionFactoryDelegate
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Делегат класса показа алерта
         alertPresenter.delegate = self
         presenter = MovieQuizPresenter(viewController: self)
@@ -97,26 +97,32 @@ final class MovieQuizViewController: UIViewController/*, QuestionFactoryDelegate
         imageView.layer.borderWidth = 0
     }
     
-    // Приватный метод проверки ответа на вопрос
-    func showAnswerResult(isCorrect: Bool) {
-        // Параметры рамки изображения
+    func highlightImageBorder(isCorrectAnswer: Bool) {
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
         imageView.layer.cornerRadius = 20
-        
-        // Окраски рамки изображения в зависимости от ответа
-        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        
-        // Увеличение счетчика правильных ответов
-        if isCorrect {
-            presenter.correctAnswers += 1
-        }
-        
-        // Запускаем задачу через 1 секунду c помощью диспетчера задач
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            // Показываем следующий mock или результаты через 1 секунду
-            guard let self = self else { return } // разворачиваем слабую ссылку
-            self.presenter.showNextQuestionOrResults()
-        }
+        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
     }
+    //    // Приватный метод проверки ответа на вопрос
+    //    func showAnswerResult(isCorrect: Bool) {
+    //        // Параметры рамки изображения
+    //        imageView.layer.masksToBounds = true
+    //        imageView.layer.borderWidth = 8
+    //        imageView.layer.cornerRadius = 20
+    //
+    //        // Окраски рамки изображения в зависимости от ответа
+    //        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+    //
+    //        // Увеличение счетчика правильных ответов
+    //        if isCorrect {
+    //            presenter.correctAnswers += 1
+    //        }
+    //
+    //        // Запускаем задачу через 1 секунду c помощью диспетчера задач
+    //        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+    //            // Показываем следующий mock или результаты через 1 секунду
+    //            guard let self = self else { return } // разворачиваем слабую ссылку
+    //            self.presenter.showNextQuestionOrResults()
+    //        }
+    //    }
 }

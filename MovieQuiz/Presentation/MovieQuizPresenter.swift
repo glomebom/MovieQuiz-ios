@@ -51,7 +51,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         let givenAnswer = isYes
         
         // Вызов метода проверки правильности ответа на вопрос
-        viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     // Приватный метод включения/отключения кнопок
@@ -117,7 +117,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     // Метод показ следующего вопроса или результатов
-    func showNextQuestionOrResults() {
+    func proceedToNextQuestionOrResults() {
         if self.isLastQuestion() {
             //Сохранение лучшего результата квиза и увеличение счетчиков статистики
             statisticService.store(correct: correctAnswers, total: questionsAmount)
@@ -144,5 +144,21 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
+    }
+    
+    // Метод проверки ответа на вопрос
+    func proceedWithAnswer(isCorrect: Bool) {
+        
+        // Увеличение счетчика правильных ответов
+        if isCorrect {
+            correctAnswers += 1
+        }
+        
+        viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            self.proceedToNextQuestionOrResults()
+        }
     }
 }
