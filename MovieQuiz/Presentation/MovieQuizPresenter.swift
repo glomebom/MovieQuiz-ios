@@ -15,54 +15,34 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // Ссылка на контроллер для передачи данных и обращения
     private weak var viewController: MovieQuizViewController?
     // Экземпляр класса сервиса статистики
-    var statisticService: StatisticService = StatisticServiceImplementation()
-    // Экземпляр модели вопроса
-    var currentQuestion: QuizQuestion?
+    private let statisticService: StatisticService! /*= StatisticServiceImplementation()*/
     
+    // Экземпляр модели вопроса
+    private var currentQuestion: QuizQuestion?
     // Количество вопросов
-    let questionsAmount: Int = 10
+    private let questionsAmount: Int = 10
     // Количество правильных ответов
-    var correctAnswers: Int = 0
+    private var correctAnswers: Int = 0
     // Переменная-счетчик количества правильных ответов
     private var currentQuestionIndex: Int = 0
     
     init(viewController: MovieQuizViewController) {
         self.viewController = viewController
         
+        statisticService = StatisticServiceImplementation()
+        
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
+        
         // Показ индикатора
         viewController.activityIndicator.hidesWhenStopped = true
         viewController.activityIndicator.startAnimating()
     }
     
-    // MARK: - Private functions
-    
-    private func didAnswer(isYes: Bool) {
-        // Отключение кнопок
-        changeStateButtons(isEnabled: false)
-        
-        // Константа для хранения данных из текущего вопроса
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        
-        // Константа для записи значения ответа пользователя на вопрос
-        let givenAnswer = isYes
-        
-        // Вызов метода проверки правильности ответа на вопрос
-        proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-    }
-    
-    // Приватный метод включения/отключения кнопок
-    private func changeStateButtons(isEnabled: Bool) {
-        viewController?.yesButton.isEnabled = isEnabled
-        viewController?.noButton.isEnabled = isEnabled
-    }
-    
     //     MARK: - QuestionFactoryDelegate
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
+        
         guard let question = question else {
             return
         }
@@ -88,14 +68,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         viewController?.showNetworkError(message: error.localizedDescription)
     }
     
-    func yesButtonClicked() {
-        didAnswer(isYes: true)
-    }
-    
-    func noButtonClicked(_ sender: UIButton) {
-        didAnswer(isYes: false)
-    }
-    
     // Метод проверки на последний вопрос
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
@@ -105,36 +77,12 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
-        // ????
-        
         questionFactory?.requestNextQuestion()
-        print("Call questionFactory?.requestNextQuestion() in restertGame)")
     }
     
     // Метод увеличения сечтчика вопроса
     func switchToTheNextQuestion() {
         currentQuestionIndex += 1
-    }
-    
-    // Метод показ следующего вопроса или результатов
-    func proceedToNextQuestionOrResults() {
-        if self.isLastQuestion() {
-            //Сохранение лучшего результата квиза и увеличение счетчиков статистики
-            statisticService.store(correct: correctAnswers, total: questionsAmount)
-            //Текст результата игры
-            let text =  "Ваш результат: \(String(correctAnswers))" + "/10" + "\n" + "Количество сыгранных квизов: \(statisticService.gamesCount)" + "\n" + "Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))" + "\n" + "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
-            
-            viewController?.alertModel = viewController?.alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
-            guard let alertModel = viewController?.alertModel else { return }
-            viewController?.showAlert(quiz: alertModel) // ОШИБКА 2: `show(quiz:)` не определён
-        } else {
-            self.switchToTheNextQuestion()
-            // Показ индикатора
-            viewController?.activityIndicator.startAnimating()
-            questionFactory?.requestNextQuestion()
-            // Скрытие индикатора
-            viewController?.activityIndicator.stopAnimating()
-        }
     }
     
     // Метод конвертации вопроса в view-модель
@@ -144,6 +92,39 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
+    }
+    
+    // Приватный метод включения/отключения кнопок
+    private func changeStateButtons(isEnabled: Bool) {
+        viewController?.yesButton.isEnabled = isEnabled
+        viewController?.noButton.isEnabled = isEnabled
+    }
+    
+    // Нажатие на кнопку ДА
+    func yesButtonClicked() {
+        didAnswer(isYes: true)
+    }
+    
+    // Нажатие на кнопку НЕТ
+    func noButtonClicked(_ sender: UIButton) {
+        didAnswer(isYes: false)
+    }
+    
+    // Проверка нажатия ДА/НЕТ
+    func didAnswer(isYes: Bool) {
+        // Отключение кнопок
+        changeStateButtons(isEnabled: false)
+        
+        // Константа для хранения данных из текущего вопроса
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+        
+        // Константа для записи значения ответа пользователя на вопрос
+        let givenAnswer = isYes
+        
+        // Вызов метода проверки правильности ответа на вопрос
+        proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     // Метод проверки ответа на вопрос
@@ -160,5 +141,45 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             guard let self = self else { return }
             self.proceedToNextQuestionOrResults()
         }
+    }
+    
+    // Метод показ следующего вопроса или результатов
+    func proceedToNextQuestionOrResults() {
+        if self.isLastQuestion() {
+            
+            let text = makeResultMessage()
+            
+            viewController?.alertModel = viewController?.alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
+            guard let alertModel = viewController?.alertModel else { return }
+            viewController?.showAlert(quiz: alertModel) // ОШИБКА 2: `show(quiz:)` не определён
+        } else {
+            self.switchToTheNextQuestion()
+            // Показ индикатора
+            viewController?.activityIndicator.startAnimating()
+            questionFactory?.requestNextQuestion()
+            // Скрытие индикатора
+            viewController?.activityIndicator.stopAnimating()
+        }
+    }
+    
+    // Метод записи лучшего результата в хранилище и формирования строки сообщения для алерта с результатами
+    func makeResultMessage() -> String {
+        
+        //Сохранение лучшего результата квиза и увеличение счетчиков статистики
+        statisticService.store(correct: correctAnswers, total: questionsAmount)
+        
+        // Параметры лучшего результата
+        let bestGame = statisticService.bestGame
+        
+        // Формирование констант для итоговой строки
+        let currentResult = "Ваш результат: \(String(correctAnswers))" + "/10"
+        let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
+        let bestGameInfoLine = "Рекорд: \(bestGame.correct)/\(bestGame.total) (\(statisticService.bestGame.date.dateTimeString))"
+        let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+        
+        // Формирование итоговой строки для алерта
+        let resultMessage = [currentResult, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine].joined(separator: "\n")
+        
+        return resultMessage
     }
 }

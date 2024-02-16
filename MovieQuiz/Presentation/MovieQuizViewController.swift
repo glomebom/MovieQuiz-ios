@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController/*, QuestionFactoryDelegate*/, AlertPresenterDelegate {
+final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
     
     // Связь элементов на экране и кода
     @IBOutlet weak private var counterLabel: UILabel!
@@ -24,9 +24,36 @@ final class MovieQuizViewController: UIViewController/*, QuestionFactoryDelegate
         // Делегат класса показа алерта
         alertPresenter.delegate = self
         presenter = MovieQuizPresenter(viewController: self)
+        
+        // Скругляем углы imageView при загрузке
+        imageView.layer.cornerRadius = 20
     }
     
-    // MARK: - AlertPresenterDelegate
+    // MARK: - Actions
+    
+    // Приватный метод выполняемый при нажатии кнопки ДА
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        presenter.yesButtonClicked()
+    }
+    
+    // Приватный метод выполняемый при нажатии кнопки НЕТ
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
+        presenter.yesButtonClicked()
+    }
+    
+    // MARK: - Functions
+    
+    // Метод показа вопроса на экране
+    func show(quiz step: QuizStepViewModel) {
+        
+        // Задание значений элементам экран из view-модели
+        counterLabel.text = step.questionNumber
+        imageView.image = step.image
+        textLabel.text = step.question
+        
+        // Убираем рамку которая остается от предыдущего ответа
+        imageView.layer.borderWidth = 0
+    }
     
     // Метод для показа результатов раунда квиза
     func showAlert(quiz result: AlertModel) {
@@ -55,22 +82,16 @@ final class MovieQuizViewController: UIViewController/*, QuestionFactoryDelegate
         self.present(alert, animated: true, completion: nil)
     }
     
-    // MARK: - Actions
-    
-    // Приватный метод выполняемый при нажатии кнопки ДА
-    @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        presenter.yesButtonClicked()
+    // Метод подсветки постера в зависимости от ответа
+    func highlightImageBorder(isCorrectAnswer: Bool) {
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 8
+        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
     }
-    
-    // Приватный метод выполняемый при нажатии кнопки НЕТ
-    @IBAction private func noButtonClicked(_ sender: UIButton) {
-        presenter.yesButtonClicked()
-    }
-    
-    // MARK: - Functions
     
     // Метод показа ошибки
     func showNetworkError(message: String) {
+        
         // Скрытие индикатора
         activityIndicator.stopAnimating()
         // Константа для алерта, message берем из ошибки error.localizedDescription
@@ -84,45 +105,4 @@ final class MovieQuizViewController: UIViewController/*, QuestionFactoryDelegate
         // Вызов метода показа алерта с попыткой загрузки данных
         self.showAlert(quiz: alert)
     }
-    
-    // Метод показа вопроса на экране
-    func show(quiz step: QuizStepViewModel) {
-        
-        // Задание значений элементам экран из view-модели
-        counterLabel.text = step.questionNumber
-        imageView.image = step.image
-        textLabel.text = step.question
-        
-        // Убираем рамку которая остается от предыдущего вызова метода проверки ответа на вопрос
-        imageView.layer.borderWidth = 0
-    }
-    
-    func highlightImageBorder(isCorrectAnswer: Bool) {
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderWidth = 8
-        imageView.layer.cornerRadius = 20
-        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-    }
-    //    // Приватный метод проверки ответа на вопрос
-    //    func showAnswerResult(isCorrect: Bool) {
-    //        // Параметры рамки изображения
-    //        imageView.layer.masksToBounds = true
-    //        imageView.layer.borderWidth = 8
-    //        imageView.layer.cornerRadius = 20
-    //
-    //        // Окраски рамки изображения в зависимости от ответа
-    //        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-    //
-    //        // Увеличение счетчика правильных ответов
-    //        if isCorrect {
-    //            presenter.correctAnswers += 1
-    //        }
-    //
-    //        // Запускаем задачу через 1 секунду c помощью диспетчера задач
-    //        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-    //            // Показываем следующий mock или результаты через 1 секунду
-    //            guard let self = self else { return } // разворачиваем слабую ссылку
-    //            self.presenter.showNextQuestionOrResults()
-    //        }
-    //    }
 }
