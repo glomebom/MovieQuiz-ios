@@ -11,17 +11,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     //    // Переменная-счетчик количества правильных ответов
-    private var correctAnswers: Int = 0
+    //    var correctAnswers: Int = 0
     
     // Константа и переменная для фабрики вопросов
     private var questionFactory: QuestionFactoryProtocol?
     
     // Константа и переменная для показа алерта
-    private let alertPresenter = AlertPresenter()
-    private var alertModel: AlertModel?
+    let alertPresenter = AlertPresenter()
     
-    // Экземпляр класса статистики
-    private var statisticService: StatisticService = StatisticServiceImplementation()
+    var alertModel: AlertModel?
+    
+    //    // Экземпляр класса статистики
+    //    var statisticService: StatisticService = StatisticServiceImplementation()
     
     // Экземпляр класса MovieQuizPresenter
     private let presenter = MovieQuizPresenter()
@@ -118,8 +119,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
                                buttonText: "Попробовать ещё раз")
         
         // Сброс значений счетчиков
-        self.correctAnswers = 0
-        self.presenter.resetQuestionIndex()
+        self.presenter.correctAnswers = 0
+        self.presenter.restartGame()
         
         // Вызов метода показа алерта с попыткой загрузки данных
         self.showAlert(quiz: alert)
@@ -149,52 +150,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         
         // Увеличение счетчика правильных ответов
         if isCorrect {
-            correctAnswers += 1
+            presenter.correctAnswers += 1
         }
         
         // Запускаем задачу через 1 секунду c помощью диспетчера задач
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             // Показываем следующий mock или результаты через 1 секунду
             guard let self = self else { return } // разворачиваем слабую ссылку
-            self.showNextQuestionOrResults()
-        }
-    }
-    
-    // Приватный метод показ следующего mock`а или результатов
-    private func showNextQuestionOrResults() {
-        
-        // Если текущий mok был последним
-        if presenter.isLastQuestion() {
-            
-            //Сохранение лучшего результата квиза и увеличение счетчиков статистики
-            statisticService.store(correct: correctAnswers, total: presenter.questionsAmount)
-            
-            // Текст алерта по результатам квиза
-            let text =  "Ваш результат: \(String(correctAnswers))" + "/10" + "\n" + "Количество сыгранных квизов: \(statisticService.gamesCount)" + "\n" + "Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))" + "\n" + "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
-            
-            // Создание модели алерта
-            alertModel = alertPresenter.createAlert(correct: correctAnswers, total: presenter.questionsAmount, message: text)
-            guard let alertModel = alertModel else { return }
-            
-            // Вызов метода показа модели алерта
-            self.showAlert(quiz: alertModel)
-            
-            // Сброс значений счетчиков
-            self.correctAnswers = 0
-            self.presenter.resetQuestionIndex()
-            
-        } else {
-            
-            // Переход к следующему вопросу
-            presenter.switchToTheNextQuestion()
-            
-            // Показ индикатора
-            activityIndicator.startAnimating()
-            
-            self.questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
-            
-            // Скрытие индикатора
-            activityIndicator.stopAnimating()
+            self.presenter.questionFactory = self.questionFactory
+            self.presenter.showNextQuestionOrResults()
         }
     }
 }
