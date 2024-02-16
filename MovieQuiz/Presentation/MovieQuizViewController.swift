@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
+final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol, AlertPresenterDelegate {
     
     // Связь элементов на экране и кода
     @IBOutlet weak private var counterLabel: UILabel!
@@ -22,7 +22,7 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
         super.viewDidLoad()
         
         // Делегат класса показа алерта
-        alertPresenter.delegate = self
+        //alertPresenter.delegate = self
         presenter = MovieQuizPresenter(viewController: self)
         
         // Скругляем углы imageView при загрузке
