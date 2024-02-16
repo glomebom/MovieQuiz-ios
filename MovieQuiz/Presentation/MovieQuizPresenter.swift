@@ -8,38 +8,41 @@
 import Foundation
 import UIKit
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
+    
+    // Экземпляр фабрики вопросов
+    private var questionFactory: QuestionFactoryProtocol?
+    // Ссылка на контроллер для передачи данных и обращения
+    private weak var viewController: MovieQuizViewController?
+    // Экземпляр класса сервиса статистики
+    var statisticService: StatisticService = StatisticServiceImplementation()
+    // Экземпляр модели вопроса
+    var currentQuestion: QuizQuestion?
+    
     // Количество вопросов
     let questionsAmount: Int = 10
+    // Количество правильных ответов
+    var correctAnswers: Int = 0
     // Переменная-счетчик количества правильных ответов
     private var currentQuestionIndex: Int = 0
     
-    //Шаг 5
-    var correctAnswers: Int = 0
-    var questionFactory: QuestionFactoryProtocol?
-    
-    // Экземпляр класса статистики
-    var statisticService: StatisticService = StatisticServiceImplementation()
-    
-    
-    var currentQuestion: QuizQuestion?
-    
-    // Ссылка на контроллер для передачи данных и обращения
-    weak var viewController: MovieQuizViewController?
-    
-    func yesButtonClicked() {
-        didAnswer(isYes: true)
+    init(viewController: MovieQuizViewController) {
+        self.viewController = viewController
+        
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        questionFactory?.loadData()
+        // Показ индикатора
+        viewController.activityIndicator.hidesWhenStopped = true
+        viewController.activityIndicator.startAnimating()
     }
     
-    func noButtonClicked(_ sender: UIButton) {
-        didAnswer(isYes: false)
-    }
+    // MARK: - Private functions
     
     private func didAnswer(isYes: Bool) {
         // Отключение кнопок
         changeStateButtons(isEnabled: false)
         
-        // Константа для хранения данных из текущего mock`а
+        // Константа для хранения данных из текущего вопроса
         guard let currentQuestion = currentQuestion else {
             return
         }
@@ -57,6 +60,8 @@ final class MovieQuizPresenter {
         viewController?.noButton.isEnabled = isEnabled
     }
     
+    //     MARK: - QuestionFactoryDelegate
+    
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -72,6 +77,45 @@ final class MovieQuizPresenter {
         changeStateButtons(isEnabled: true)
     }
     
+    func didLoadDataFromServer() {
+        // Скрытие индикатора
+        viewController?.activityIndicator.stopAnimating()
+        questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        // Вызываем метод показа алерта с ошибкой, в сообщение для алерта передаем текст ошибки
+        viewController?.showNetworkError(message: error.localizedDescription)
+    }
+    
+    func yesButtonClicked() {
+        didAnswer(isYes: true)
+    }
+    
+    func noButtonClicked(_ sender: UIButton) {
+        didAnswer(isYes: false)
+    }
+    
+    // Метод проверки на последний вопрос
+    func isLastQuestion() -> Bool {
+        currentQuestionIndex == questionsAmount - 1
+    }
+    
+    // Метод сброса счетчика вопросов
+    func restartGame() {
+        currentQuestionIndex = 0
+        correctAnswers = 0
+        // ????
+        
+        questionFactory?.requestNextQuestion()
+        print("Call questionFactory?.requestNextQuestion() in restertGame)")
+    }
+    
+    // Метод увеличения сечтчика вопроса
+    func switchToTheNextQuestion() {
+        currentQuestionIndex += 1
+    }
+    
     // Метод показ следующего вопроса или результатов
     func showNextQuestionOrResults() {
         if self.isLastQuestion() {
@@ -83,9 +127,6 @@ final class MovieQuizPresenter {
             viewController?.alertModel = viewController?.alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
             guard let alertModel = viewController?.alertModel else { return }
             viewController?.showAlert(quiz: alertModel) // ОШИБКА 2: `show(quiz:)` не определён
-            // Сброс значений счетчиков
-            self.correctAnswers = 0
-            self.restartGame()
         } else {
             self.switchToTheNextQuestion()
             // Показ индикатора
@@ -95,23 +136,8 @@ final class MovieQuizPresenter {
             viewController?.activityIndicator.stopAnimating()
         }
     }
-        
-    // Метод проверки на последний вопрос
-    func isLastQuestion() -> Bool {
-        currentQuestionIndex == questionsAmount - 1
-    }
     
-    // Метод сброса счетчика вопросов
-    func restartGame() {
-        currentQuestionIndex = 0
-    }
-    
-    // Метод увеличения сечтчика вопроса
-    func switchToTheNextQuestion() {
-        currentQuestionIndex += 1
-    }
-    
-    // Метод конвертации mock`а в view-модель
+    // Метод конвертации вопроса в view-модель
     func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),

@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, AlertPresenterDelegate {
+final class MovieQuizViewController: UIViewController/*, QuestionFactoryDelegate*/, AlertPresenterDelegate {
     
     // Связь элементов на экране и кода
     @IBOutlet weak private var counterLabel: UILabel!
@@ -10,59 +10,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     @IBOutlet weak var noButton: UIButton!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
-    //    // Переменная-счетчик количества правильных ответов
-    //    var correctAnswers: Int = 0
-    
-    // Константа и переменная для фабрики вопросов
-    private var questionFactory: QuestionFactoryProtocol?
-    
     // Константа и переменная для показа алерта
     let alertPresenter = AlertPresenter()
-    
+    // Переменная модели алерта
     var alertModel: AlertModel?
-    
-    //    // Экземпляр класса статистики
-    //    var statisticService: StatisticService = StatisticServiceImplementation()
-    
     // Экземпляр класса MovieQuizPresenter
-    private let presenter = MovieQuizPresenter()
+    private var presenter: MovieQuizPresenter!
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Делегат фабрики вопросов
-        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
-        
+
         // Делегат класса показа алерта
         alertPresenter.delegate = self
-        
-        // Показ индикатора
-        activityIndicator.hidesWhenStopped = true
-        activityIndicator.startAnimating()
-        
-        // Загрузка данных
-        questionFactory?.loadData()
-        
-        presenter.viewController = self
-    }
-    
-    // MARK: - QuestionFactoryDelegate
-    
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        presenter.didReceiveNextQuestion(question: question)
-    }
-    
-    func didLoadDataFromServer() {
-        // Скрытие индикатора
-        activityIndicator.stopAnimating()
-        
-        questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
-    }
-    
-    func didFailToLoadData(with error: Error) {
-        // Вызываем метод показа алерта с ошибкой, в сообщение для алерта передаем текст ошибки
-        showNetworkError(message: error.localizedDescription)
+        presenter = MovieQuizPresenter(viewController: self)
     }
     
     // MARK: - AlertPresenterDelegate
@@ -81,8 +42,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             
             // разворачиваем слабую ссылку
             guard let self = self else { return }
-            
-            questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
+            presenter.restartGame()
         }
         
         // Добавление действия к алерту
@@ -107,10 +67,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         presenter.yesButtonClicked()
     }
     
-    // MARK: - Private functions
+    // MARK: - Functions
     
     // Метод показа ошибки
-    private func showNetworkError(message: String) {
+    func showNetworkError(message: String) {
         // Скрытие индикатора
         activityIndicator.stopAnimating()
         // Константа для алерта, message берем из ошибки error.localizedDescription
@@ -119,7 +79,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
                                buttonText: "Попробовать ещё раз")
         
         // Сброс значений счетчиков
-        self.presenter.correctAnswers = 0
         self.presenter.restartGame()
         
         // Вызов метода показа алерта с попыткой загрузки данных
@@ -157,7 +116,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             // Показываем следующий mock или результаты через 1 секунду
             guard let self = self else { return } // разворачиваем слабую ссылку
-            self.presenter.questionFactory = self.questionFactory
             self.presenter.showNextQuestionOrResults()
         }
     }
