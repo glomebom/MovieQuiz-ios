@@ -13,7 +13,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // Экземпляр фабрики вопросов
     private var questionFactory: QuestionFactoryProtocol?
     // Ссылка на контроллер для передачи данных и обращения
-    private weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewControllerProtocol? /*MovieQuizViewController?*/
     // Экземпляр класса сервиса статистики
     private let statisticService: StatisticService! /*= StatisticServiceImplementation()*/
     
@@ -27,6 +27,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestionIndex: Int = 0
     
     init(viewController: MovieQuizViewController) {
+        
         self.viewController = viewController
         
         statisticService = StatisticServiceImplementation()
@@ -149,9 +150,10 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             
             let text = makeResultMessage()
             
-            viewController?.alertModel = viewController?.alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
+            guard let alertPresenter = viewController?.alertPresenter else { return }
+            viewController?.alertModel = alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
             guard let alertModel = viewController?.alertModel else { return }
-            viewController?.showAlert(quiz: alertModel) // ОШИБКА 2: `show(quiz:)` не определён
+            viewController?.showAlert(quiz: alertModel)
         } else {
             self.switchToTheNextQuestion()
             // Показ индикатора

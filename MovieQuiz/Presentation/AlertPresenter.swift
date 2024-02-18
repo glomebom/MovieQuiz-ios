@@ -11,6 +11,10 @@ final class AlertPresenter {
     
     weak var delegate: AlertPresenterDelegate?
     
+    init(delegate: AlertPresenterDelegate? = nil) {
+        self.delegate = delegate
+    }
+    
     // Метод создания модели алерта
     func createAlert(correct: Int, total: Int, message: String) -> AlertModel {
         // Задание параметров модели алерта
