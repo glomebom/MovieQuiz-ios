@@ -150,8 +150,14 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             
             let text = makeResultMessage()
             
-            guard let alertPresenter = viewController?.alertPresenter else { return }
-            viewController?.alertModel = alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
+//            guard let alertPresenter = viewController?.alertPresenter else { return }
+//            viewController?.alertModel = alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
+
+            viewController?.alertModel = AlertModel(
+                            title: "Этот раунд окончен!",
+                            text: text,
+                            buttonText: "Сыграть еще раз")
+            
             guard let alertModel = viewController?.alertModel else { return }
             viewController?.showAlert(quiz: alertModel)
         } else {

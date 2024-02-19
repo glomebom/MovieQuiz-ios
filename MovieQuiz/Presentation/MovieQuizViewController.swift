@@ -11,8 +11,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     // Константа алерта
-//    var alertPresenter = AlertPresenter()
-    var alertPresenter: AlertPresenter?
+    var alertPresenter = AlertPresenter()
     
     // Переменная модели алерта
     var alertModel: AlertModel?
@@ -24,7 +23,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         super.viewDidLoad()
         
         // Делегат класса показа алерта
-//        alertPresenter.delegate = self
+        alertPresenter.delegate = self
         presenter = MovieQuizPresenter(viewController: self)
         
         // Скругляем углы imageView при загрузке
@@ -99,7 +98,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         // Константа для алерта, message берем из ошибки error.localizedDescription
         let alert = AlertModel(title: "Ошибка",
                                text: message,
-                               buttonText: "Попробовать ещё раз")
+                               buttonText: "Попробовать еще раз")
         
         // Сброс значений счетчиков
         self.presenter.restartGame()
