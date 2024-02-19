@@ -13,9 +13,9 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // Экземпляр фабрики вопросов
     private var questionFactory: QuestionFactoryProtocol?
     // Ссылка на контроллер для передачи данных и обращения
-    private weak var viewController: MovieQuizViewControllerProtocol? /*MovieQuizViewController?*/
+    private weak var viewController: MovieQuizViewControllerProtocol?
     // Экземпляр класса сервиса статистики
-    private let statisticService: StatisticService! /*= StatisticServiceImplementation()*/
+    private let statisticService: StatisticService!
     
     // Экземпляр модели вопроса
     private var currentQuestion: QuizQuestion?
@@ -44,13 +44,10 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     //     MARK: - QuestionFactoryDelegate
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        
-        guard let question = question else {
-            return
-        }
-        
+        guard let question = question else { return }
         currentQuestion = question
         let viewModel = convert(model: question)
+        
         DispatchQueue.main.async { [weak self] in
             self?.viewController?.show(quiz: viewModel)
         }
@@ -131,12 +128,12 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // Метод проверки ответа на вопрос
     func proceedWithAnswer(isCorrect: Bool) {
-        
         // Увеличение счетчика правильных ответов
         if isCorrect {
             correctAnswers += 1
         }
         
+        // Вызов метода окраски рамки
         viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
@@ -148,13 +145,14 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // Метод показ следующего вопроса или результатов
     func proceedToNextQuestionOrResults() {
         if self.isLastQuestion() {
-            
+            // Вызов метода формирования текста с результатами
             let text = makeResultMessage()
-
+            
+            // Формируем модель алерта
             viewController?.alertModel = AlertModel(
-                            title: "Этот раунд окончен!",
-                            text: text,
-                            buttonText: "Сыграть еще раз")
+                title: "Этот раунд окончен!",
+                text: text,
+                buttonText: "Сыграть еще раз")
             
             guard let alertModel = viewController?.alertModel else { return }
             viewController?.showAlert(quiz: alertModel)
@@ -170,7 +168,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // Метод записи лучшего результата в хранилище и формирования строки сообщения для алерта с результатами
     func makeResultMessage() -> String {
-        
         //Сохранение лучшего результата квиза и увеличение счетчиков статистики
         statisticService.store(correct: correctAnswers, total: questionsAmount)
         

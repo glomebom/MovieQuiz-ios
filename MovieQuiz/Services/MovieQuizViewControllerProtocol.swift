@@ -9,7 +9,6 @@ import Foundation
 import UIKit
 
 protocol MovieQuizViewControllerProtocol: AnyObject {
-    
     var yesButton: UIButton! { get }
     var noButton: UIButton! { get }
     

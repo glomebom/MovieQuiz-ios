@@ -11,9 +11,6 @@ final class QuestionFactory: QuestionFactoryProtocol {
     private let moviesLoader: MoviesLoading
     weak var delegate: QuestionFactoryDelegate?
     
-    let movieQuizViewController = MovieQuizViewController()
-    
-    
     init(moviesLoader: MoviesLoading, delegate: QuestionFactoryDelegate?) {
         self.moviesLoader = moviesLoader
         self.delegate = delegate

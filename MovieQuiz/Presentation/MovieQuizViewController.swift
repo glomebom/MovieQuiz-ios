@@ -47,7 +47,6 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     
     // Метод показа вопроса на экране
     func show(quiz step: QuizStepViewModel) {
-        
         // Задание значений элементам экран из view-модели
         counterLabel.text = step.questionNumber
         imageView.image = step.image
@@ -59,7 +58,6 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     
     // Метод для показа результатов раунда квиза
     func showAlert(quiz result: AlertModel) {
-        
         // Константа для алерта
         let alert = UIAlertController(
             title: result.title,
@@ -93,7 +91,6 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     
     // Метод показа ошибки
     func showNetworkError(message: String) {
-        
         // Скрытие индикатора
         activityIndicator.stopAnimating()
         
