@@ -16,22 +16,26 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     
     var alertModel: MovieQuiz.AlertModel?
     
-    var alertPresenter: MovieQuiz.AlertPresenter
+    var alertPresenter: MovieQuiz.AlertPresenter?
     
     var activityIndicator: UIActivityIndicatorView!
     
     func show(quiz step: MovieQuiz.QuizStepViewModel) {
+        <#code#>
     }
     
     func showAlert(quiz result: MovieQuiz.AlertModel) {
+        <#code#>
     }
     
     func highlightImageBorder(isCorrectAnswer: Bool) {
+        <#code#>
     }
     
     func showNetworkError(message: String) {
+        <#code#>
     }
-    }
+}
 
 final class MovieQuizPresenterTests: XCTestCase {
     func testPresenterConvertModel() throws {
