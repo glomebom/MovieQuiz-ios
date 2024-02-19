@@ -26,7 +26,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // Переменная-счетчик количества правильных ответов
     private var currentQuestionIndex: Int = 0
     
-    init(viewController: MovieQuizViewController) {
+    init(viewController: MovieQuizViewControllerProtocol?) {
         
         self.viewController = viewController
         
@@ -36,8 +36,9 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         questionFactory?.loadData()
         
         // Показ индикатора
-        viewController.activityIndicator.hidesWhenStopped = true
-        viewController.activityIndicator.startAnimating()
+        guard let activityIndicator = viewController?.activityIndicator else { return }
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.startAnimating()
     }
     
     //     MARK: - QuestionFactoryDelegate
@@ -149,9 +150,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         if self.isLastQuestion() {
             
             let text = makeResultMessage()
-            
-//            guard let alertPresenter = viewController?.alertPresenter else { return }
-//            viewController?.alertModel = alertPresenter.createAlert(correct: correctAnswers, total: questionsAmount, message: text)
 
             viewController?.alertModel = AlertModel(
                             title: "Этот раунд окончен!",

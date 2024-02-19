@@ -11,10 +11,11 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     // Константа алерта
-    var alertPresenter = AlertPresenter()
+    private let alertPresenter = AlertPresenter()
     
     // Переменная модели алерта
     var alertModel: AlertModel?
+    
     // Экземпляр класса MovieQuizPresenter
     private var presenter: MovieQuizPresenter!
     
@@ -95,6 +96,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         
         // Скрытие индикатора
         activityIndicator.stopAnimating()
+        
         // Константа для алерта, message берем из ошибки error.localizedDescription
         let alert = AlertModel(title: "Ошибка",
                                text: message,

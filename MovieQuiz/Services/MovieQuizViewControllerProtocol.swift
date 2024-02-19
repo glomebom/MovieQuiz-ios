@@ -14,7 +14,6 @@ protocol MovieQuizViewControllerProtocol: AnyObject {
     var noButton: UIButton! { get }
     
     var alertModel: AlertModel? { get set }
-//    var alertPresenter: AlertPresenter { get set }
     var activityIndicator: UIActivityIndicatorView! { get set }
     
     func show(quiz step: QuizStepViewModel)
