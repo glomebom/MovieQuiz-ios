@@ -1,7 +1,7 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol, AlertPresenterDelegate {
-    
+
     // Связь элементов на экране и кода
     @IBOutlet weak private var counterLabel: UILabel!
     @IBOutlet weak private var imageView: UIImageView!
@@ -13,12 +13,10 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // Константа алерта
     private let alertPresenter = AlertPresenter()
     
-    // Переменная модели алерта
-    var alertModel: AlertModel?
-    
     // Экземпляр класса MovieQuizPresenter
     private var presenter: MovieQuizPresenter!
     
+        
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +27,9 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         
         // Скругляем углы imageView при загрузке
         imageView.layer.cornerRadius = 20
+//        imageView.isHidden = true
+        
+        activityIndicator.hidesWhenStopped = true
     }
     
     // MARK: - Actions
@@ -82,6 +83,22 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         self.present(alert, animated: true, completion: nil)
     }
     
+    // Метод показа индикатора
+    func showLoadingIndicator() {
+        activityIndicator.startAnimating()
+    }
+    
+    // Метод скрытия индикатора
+    func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+    }
+    
+    // Приватный метод включения/отключения кнопок
+    func changeStateButtons(isEnabled: Bool) {
+        yesButton.isEnabled = isEnabled
+        noButton.isEnabled = isEnabled
+    }
+    
     // Метод подсветки постера в зависимости от ответа
     func highlightImageBorder(isCorrectAnswer: Bool) {
         imageView.layer.masksToBounds = true
@@ -100,7 +117,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
                                buttonText: "Попробовать еще раз")
         
         // Сброс значений счетчиков
-        self.presenter.restartGame()
+        //self.presenter.restartGame()
         
         // Вызов метода показа алерта с попыткой загрузки данных
         self.showAlert(quiz: alert)

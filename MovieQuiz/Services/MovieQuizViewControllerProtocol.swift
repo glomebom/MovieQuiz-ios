@@ -12,8 +12,12 @@ protocol MovieQuizViewControllerProtocol: AnyObject {
     var yesButton: UIButton! { get }
     var noButton: UIButton! { get }
     
-    var alertModel: AlertModel? { get set }
+//    var alertModel: AlertModel? { get set }
     var activityIndicator: UIActivityIndicatorView! { get set }
+    
+    func showLoadingIndicator()
+    func hideLoadingIndicator()
+    func changeStateButtons(isEnabled: Bool)
     
     func show(quiz step: QuizStepViewModel)
     func showAlert(quiz result: AlertModel)

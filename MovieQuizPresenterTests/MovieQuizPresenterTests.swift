@@ -12,6 +12,7 @@ import XCTest
 
 
 final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
+    
     var yesButton: UIButton!
 
     var noButton: UIButton!
@@ -30,6 +31,15 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     }
 
     func showNetworkError(message: String) {
+    }
+    
+    func showLoadingIndicator() {
+    }
+    
+    func hideLoadingIndicator() {
+    }
+    
+    func changeStateButtons(isEnabled: Bool) {
     }
 }
 

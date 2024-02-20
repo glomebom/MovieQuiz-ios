@@ -35,10 +35,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
         
-        // Показ индикатора
-        guard let activityIndicator = viewController?.activityIndicator else { return }
-        activityIndicator.hidesWhenStopped = true
-        activityIndicator.startAnimating()
+        viewController?.showLoadingIndicator()
     }
     
     //     MARK: - QuestionFactoryDelegate
@@ -53,12 +50,12 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
         
         // Включение кнопок
-        changeStateButtons(isEnabled: true)
+        viewController?.changeStateButtons(isEnabled: true)
     }
     
     func didLoadDataFromServer() {
         // Скрытие индикатора
-        viewController?.activityIndicator.stopAnimating()
+        viewController?.hideLoadingIndicator()
         questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
     }
     
@@ -68,7 +65,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     // Метод проверки на последний вопрос
-    func isLastQuestion() -> Bool {
+    private func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
     
@@ -80,23 +77,17 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     // Метод увеличения сечтчика вопроса
-    func switchToTheNextQuestion() {
+    private func switchToTheNextQuestion() {
         currentQuestionIndex += 1
     }
     
     // Метод конвертации вопроса в view-модель
-    func convert(model: QuizQuestion) -> QuizStepViewModel {
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
-    }
-    
-    // Приватный метод включения/отключения кнопок
-    private func changeStateButtons(isEnabled: Bool) {
-        viewController?.yesButton.isEnabled = isEnabled
-        viewController?.noButton.isEnabled = isEnabled
     }
     
     // Нажатие на кнопку ДА
@@ -110,9 +101,9 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     // Проверка нажатия ДА/НЕТ
-    func didAnswer(isYes: Bool) {
+    private func didAnswer(isYes: Bool) {
         // Отключение кнопок
-        changeStateButtons(isEnabled: false)
+        viewController?.changeStateButtons(isEnabled: false)
         
         // Константа для хранения данных из текущего вопроса
         guard let currentQuestion = currentQuestion else {
@@ -127,7 +118,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     // Метод проверки ответа на вопрос
-    func proceedWithAnswer(isCorrect: Bool) {
+    private func proceedWithAnswer(isCorrect: Bool) {
         // Увеличение счетчика правильных ответов
         if isCorrect {
             correctAnswers += 1
@@ -143,31 +134,31 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     // Метод показ следующего вопроса или результатов
-    func proceedToNextQuestionOrResults() {
-        if self.isLastQuestion() {
+    private func proceedToNextQuestionOrResults() {
+        if isLastQuestion() {
             // Вызов метода формирования текста с результатами
             let text = makeResultMessage()
             
             // Формируем модель алерта
-            viewController?.alertModel = AlertModel(
+            let alertModel = AlertModel(
                 title: "Этот раунд окончен!",
                 text: text,
                 buttonText: "Сыграть еще раз")
             
-            guard let alertModel = viewController?.alertModel else { return }
             viewController?.showAlert(quiz: alertModel)
         } else {
-            self.switchToTheNextQuestion()
+            // Увеличение индекса вопроса в массиве
+            switchToTheNextQuestion()
             // Показ индикатора
-            viewController?.activityIndicator.startAnimating()
+            viewController?.showLoadingIndicator()
             questionFactory?.requestNextQuestion()
             // Скрытие индикатора
-            viewController?.activityIndicator.stopAnimating()
+            viewController?.hideLoadingIndicator()
         }
     }
     
     // Метод записи лучшего результата в хранилище и формирования строки сообщения для алерта с результатами
-    func makeResultMessage() -> String {
+    private func makeResultMessage() -> String {
         //Сохранение лучшего результата квиза и увеличение счетчиков статистики
         statisticService.store(correct: correctAnswers, total: questionsAmount)
         
