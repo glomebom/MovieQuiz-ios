@@ -1,7 +1,7 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol, AlertPresenterDelegate {
-
+final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
+    
     // Связь элементов на экране и кода
     @IBOutlet weak private var counterLabel: UILabel!
     @IBOutlet weak private var imageView: UIImageView!
@@ -16,18 +16,15 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // Экземпляр класса MovieQuizPresenter
     private var presenter: MovieQuizPresenter!
     
-        
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Делегат класса показа алерта
-        alertPresenter.delegate = self
         presenter = MovieQuizPresenter(viewController: self)
         
         // Скругляем углы imageView при загрузке
         imageView.layer.cornerRadius = 20
-//        imageView.isHidden = true
         
         activityIndicator.hidesWhenStopped = true
     }
@@ -57,30 +54,20 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         imageView.layer.borderWidth = 0
     }
     
-    // Метод для показа результатов раунда квиза
-    func showAlert(quiz result: AlertModel) {
-        // Константа для алерта
-        let alert = UIAlertController(
+    // Метод для показа алерта
+    func show(quiz result: AlertModel) {
+        
+        let alertModel = AlertModel(
             title: result.title,
-            message: result.text,
-            preferredStyle: .alert)
+            text: result.text,
+            buttonText: result.buttonText,
+            completion: { [weak self] in
+                guard let self = self else { return }
+                self.presenter.restartGame()
+            })
         
-        // Константа для caption`а кнопки и действий выполняемых по нажатию на кнопку
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            
-            // разворачиваем слабую ссылку
-            guard let self = self else { return }
-            presenter.restartGame()
-        }
-        
-        // Добавление действия к алерту
-        alert.addAction(action)
-        
-        // Указание идентификатора для теста алерта
-        alert.view.accessibilityIdentifier = "alertWindow"
-        
-        // Показ алерта
-        self.present(alert, animated: true, completion: nil)
+        // Вызов метода показа алерта с результатами
+        alertPresenter.showAlert(controller: self, alertModel: alertModel)
     }
     
     // Метод показа индикатора
@@ -109,17 +96,15 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // Метод показа ошибки
     func showNetworkError(message: String) {
         // Скрытие индикатора
-        activityIndicator.stopAnimating()
+        hideLoadingIndicator()
         
         // Константа для алерта, message берем из ошибки error.localizedDescription
-        let alert = AlertModel(title: "Ошибка",
-                               text: message,
-                               buttonText: "Попробовать еще раз")
+        let alertModel = AlertModel(title: "Ошибка",
+                                    text: message,
+                                    buttonText: "Попробовать еще раз")
         
-        // Сброс значений счетчиков
-        //self.presenter.restartGame()
-        
-        // Вызов метода показа алерта с попыткой загрузки данных
-        self.showAlert(quiz: alert)
+        // Вызов метода показа алерта
+        self.show(quiz: alertModel)
     }
 }
+

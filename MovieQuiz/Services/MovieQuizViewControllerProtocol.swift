@@ -20,7 +20,7 @@ protocol MovieQuizViewControllerProtocol: AnyObject {
     func changeStateButtons(isEnabled: Bool)
     
     func show(quiz step: QuizStepViewModel)
-    func showAlert(quiz result: AlertModel)
+    func show(quiz result: AlertModel)
     
     func highlightImageBorder(isCorrectAnswer: Bool)
     

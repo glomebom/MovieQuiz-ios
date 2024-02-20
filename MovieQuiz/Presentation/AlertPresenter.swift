@@ -6,23 +6,26 @@
 //
 
 import Foundation
+import UIKit
 
 final class AlertPresenter {
     
     weak var delegate: AlertPresenterDelegate?
-    
-    init(delegate: AlertPresenterDelegate? = nil) {
-        self.delegate = delegate
-    }
-    
-    // Метод создания модели алерта
-    func createAlert(correct: Int, total: Int, message: String) -> AlertModel {
-        // Задание параметров модели алерта
-        let alertModel = AlertModel(
-            title: "Этот раунд окончен!",
-            text: message,
-            buttonText: "Сыграть еще раз")
+
+    func showAlert(controller: UIViewController, alertModel: AlertModel) {
         
-        return alertModel
+        let alert = UIAlertController(title: alertModel.title, message: alertModel.text, preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: alertModel.buttonText, style: .default) { _ in
+            alertModel.completion!()
+        }
+        // Добавление действия к алерту
+        alert.addAction(action)
+        
+        // Указание идентификатора для теста алерта
+        alert.view.accessibilityIdentifier = "alertWindow"
+        
+        // Показ алерта
+        controller.present(alert, animated: true, completion:nil)
     }
 }

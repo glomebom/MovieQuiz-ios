@@ -82,7 +82,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     // Метод конвертации вопроса в view-модель
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
@@ -145,7 +145,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
                 text: text,
                 buttonText: "Сыграть еще раз")
             
-            viewController?.showAlert(quiz: alertModel)
+            // Вызов метода показа алерта
+            viewController?.show(quiz: alertModel)
         } else {
             // Увеличение индекса вопроса в массиве
             switchToTheNextQuestion()
