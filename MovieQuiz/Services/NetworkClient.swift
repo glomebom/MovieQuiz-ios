@@ -17,7 +17,9 @@ struct NetworkClient: NetworkRouting {
         case codeError
     }
     
+    // Метод запроса/ответа по API
     func fetch(url: URL, handler: @escaping (Result<Data,Error>) -> Void) {
+        // Преобразуем ссылку в URL-запрос
         let request = URLRequest(url: url)
         
         // Проверяем, пришла ли ошибка

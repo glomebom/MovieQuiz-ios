@@ -39,6 +39,12 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     func hideLoadingIndicator() {
     }
     
+    func showViewAndLabel() {
+    }
+    
+    func hideViewAndLabel() {
+    }
+    
     func changeStateButtons(isEnabled: Bool) {
     }
 }

@@ -16,7 +16,6 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // Экземпляр класса MovieQuizPresenter
     private var presenter: MovieQuizPresenter!
     
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,6 +25,10 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         // Скругляем углы imageView при загрузке
         imageView.layer.cornerRadius = 20
         
+        // Скрытие контейнеров постера и вопроса до загрузки данных
+        hideViewAndLabel()
+        
+        // Свойство показа индикатора
         activityIndicator.hidesWhenStopped = true
     }
     
@@ -38,18 +41,22 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     
     // Приватный метод выполняемый при нажатии кнопки НЕТ
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        presenter.yesButtonClicked()
+        presenter.noButtonClicked()
     }
     
     // MARK: - Functions
     
     // Метод показа вопроса на экране
     func show(quiz step: QuizStepViewModel) {
+
+        // Показываем элементы
+        showViewAndLabel()
+        
         // Задание значений элементам экран из view-модели
         counterLabel.text = step.questionNumber
         imageView.image = step.image
         textLabel.text = step.question
-        
+                
         // Убираем рамку которая остается от предыдущего ответа
         imageView.layer.borderWidth = 0
     }
@@ -57,6 +64,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // Метод для показа алерта
     func show(quiz result: AlertModel) {
         
+        // Формирование модели для показа алерта с результатами
         let alertModel = AlertModel(
             title: result.title,
             text: result.text,
@@ -78,6 +86,18 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // Метод скрытия индикатора
     func hideLoadingIndicator() {
         activityIndicator.stopAnimating()
+    }
+    
+    // Метод показа постера и вопроса
+    func showViewAndLabel() {
+        imageView.alpha = 1.0
+        textLabel.alpha = 1.0
+    }
+    
+    // Метод скрытия постера и вопроса
+    func hideViewAndLabel() {
+        imageView.alpha = 0
+        textLabel.alpha = 0
     }
     
     // Приватный метод включения/отключения кнопок
@@ -107,4 +127,3 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         self.show(quiz: alertModel)
     }
 }
-

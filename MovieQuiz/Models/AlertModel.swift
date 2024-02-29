@@ -9,6 +9,7 @@ import Foundation
 
 // Структура для отображения результатов в алерте
 struct AlertModel {
+    
     let title: String
     let text: String
     let buttonText: String

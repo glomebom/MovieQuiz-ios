@@ -10,11 +10,11 @@ import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
-    // Экземпляр фабрики вопросов
+    /// Экземпляр фабрики вопросов
     private var questionFactory: QuestionFactoryProtocol?
-    // Ссылка на контроллер для передачи данных и обращения
+    /// Ссылка на контроллер для передачи данных и обращения
     private weak var viewController: MovieQuizViewControllerProtocol?
-    // Экземпляр класса сервиса статистики
+    /// Экземпляр класса сервиса статистики
     private let statisticService: StatisticService!
     
     // Экземпляр модели вопроса
@@ -26,6 +26,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // Переменная-счетчик количества правильных ответов
     private var currentQuestionIndex: Int = 0
     
+    // Инициализатор класса
     init(viewController: MovieQuizViewControllerProtocol?) {
         
         self.viewController = viewController
@@ -56,7 +57,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func didLoadDataFromServer() {
         // Скрытие индикатора
         viewController?.hideLoadingIndicator()
-        questionFactory?.requestNextQuestion() // Запрашиваем следующий вопрос
+        // Запрашиваем следующий вопрос
+        questionFactory?.requestNextQuestion()
     }
     
     func didFailToLoadData(with error: Error) {
@@ -64,40 +66,16 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         viewController?.showNetworkError(message: error.localizedDescription)
     }
     
-    // Метод проверки на последний вопрос
-    private func isLastQuestion() -> Bool {
-        currentQuestionIndex == questionsAmount - 1
-    }
-    
-    // Метод сброса счетчика вопросов
-    func restartGame() {
-        currentQuestionIndex = 0
-        correctAnswers = 0
-        questionFactory?.requestNextQuestion()
-    }
+    // MARK: - Private functions
     
     // Метод увеличения сечтчика вопроса
     private func switchToTheNextQuestion() {
         currentQuestionIndex += 1
     }
-    
-    // Метод конвертации вопроса в view-модель
-    func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-        return questionStep
-    }
-    
-    // Нажатие на кнопку ДА
-    func yesButtonClicked() {
-        didAnswer(isYes: true)
-    }
-    
-    // Нажатие на кнопку НЕТ
-    func noButtonClicked(_ sender: UIButton) {
-        didAnswer(isYes: false)
+
+    // Метод проверки на последний вопрос
+    private func isLastQuestion() -> Bool {
+        currentQuestionIndex == questionsAmount - 1
     }
     
     // Проверка нажатия ДА/НЕТ
@@ -112,7 +90,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         // Константа для записи значения ответа пользователя на вопрос
         let givenAnswer = isYes
-        
+
         // Вызов метода проверки правильности ответа на вопрос
         proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
@@ -136,7 +114,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // Метод показ следующего вопроса или результатов
     private func proceedToNextQuestionOrResults() {
         if isLastQuestion() {
-            // Вызов метода формирования текста с результатами
+            
+            // Вызов метода формирования сообщения с результатами
             let text = makeResultMessage()
             
             // Формируем модель алерта
@@ -148,11 +127,16 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             // Вызов метода показа алерта
             viewController?.show(quiz: alertModel)
         } else {
+            
             // Увеличение индекса вопроса в массиве
             switchToTheNextQuestion()
+            
             // Показ индикатора
             viewController?.showLoadingIndicator()
+
+            // Запрашиваем следующий вопрос
             questionFactory?.requestNextQuestion()
+
             // Скрытие индикатора
             viewController?.hideLoadingIndicator()
         }
@@ -160,6 +144,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // Метод записи лучшего результата в хранилище и формирования строки сообщения для алерта с результатами
     private func makeResultMessage() -> String {
+        
         //Сохранение лучшего результата квиза и увеличение счетчиков статистики
         statisticService.store(correct: correctAnswers, total: questionsAmount)
         
@@ -176,5 +161,34 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         let resultMessage = [currentResult, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine].joined(separator: "\n")
         
         return resultMessage
+    }
+    
+    // MARK: - Functions
+    
+    // Метод сброса счетчика вопросов
+    func restartGame() {
+        currentQuestionIndex = 0
+        correctAnswers = 0
+        // Запрашиваем следующий вопрос
+        questionFactory?.requestNextQuestion()
+    }
+    
+    // Метод конвертации вопроса в view-модель
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
+        let questionStep = QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+        return questionStep
+    }
+    
+    // Нажатие на кнопку ДА
+    func yesButtonClicked() {
+        didAnswer(isYes: true)
+    }
+    
+    // Нажатие на кнопку НЕТ
+    func noButtonClicked() {
+        didAnswer(isYes: false)
     }
 }

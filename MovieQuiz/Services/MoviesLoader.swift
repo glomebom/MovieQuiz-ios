@@ -15,7 +15,7 @@ struct MoviesLoader: MoviesLoading {
     // MARK: - NetworkClient
     private let networkClient: NetworkRouting
     
-//    Теперь переменная networkClient — это протокол, а не его конкретная реализация, реализация протокола передаётся через конструктор структуры
+    //    Теперь переменная networkClient — это протокол, а не его конкретная реализация, реализация протокола передаётся через конструктор структуры
     init(networkClient: NetworkRouting = NetworkClient()) {
         self.networkClient = networkClient
     }
