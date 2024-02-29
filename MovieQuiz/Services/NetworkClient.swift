@@ -7,13 +7,19 @@
 
 import Foundation
 
-struct NetworkClient {
+protocol NetworkRouting {
+    func fetch(url: URL, handler: @escaping (Result<Data, Error>) -> Void)
+}
+
+struct NetworkClient: NetworkRouting {
     
     private enum NetworkError: Error {
         case codeError
     }
     
+    // Метод запроса/ответа по API
     func fetch(url: URL, handler: @escaping (Result<Data,Error>) -> Void) {
+        // Преобразуем ссылку в URL-запрос
         let request = URLRequest(url: url)
         
         // Проверяем, пришла ли ошибка
@@ -33,7 +39,7 @@ struct NetworkClient {
             guard let data = data else { return }
             handler(.success(data))
         }
-        
+
         task.resume()
     }
 }

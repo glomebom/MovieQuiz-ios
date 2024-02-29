@@ -9,15 +9,23 @@ import Foundation
 import UIKit
 
 protocol StatisticService {
+    
+    // Средняя точность
     var totalAccuracy: Double { get set }
+    // Количество игр
     var gamesCount: Int { get set }
+    // Лучший результат
     var bestGame: GameRecord { get set }
+    // Общее количество правильных ответов
     var totalCorrectAnswers: Int { get set }
+    // Общее количество вопросов
     var totalAmount: Int { get set }
+    //Метод сохранения лучшего результата квиза и увеличение счетчиков статистики
     func store(correct count: Int, total amount: Int)
 }
 
 final class StatisticServiceImplementation: StatisticService {
+    
     private enum Keys: String {
         case correct, total, bestGame, gamesCount, totalCorrectAnswers, totalAmount
     }
@@ -124,6 +132,7 @@ final class StatisticServiceImplementation: StatisticService {
     //Метод сохранения лучшего результата квиза и увеличение счетчиков статистики
     func store(correct count: Int, total amount: Int) {
         let currentGame: GameRecord = GameRecord(correct: count, total: amount, date: Date())
+        
         if bestGame.isBetterThan(currentGame){
             bestGame = currentGame
         }

@@ -8,19 +8,56 @@
 import Foundation
 
 final class QuestionFactory: QuestionFactoryProtocol {
+    
+    // Обработка ошибок возвращаемых в поле errorMessage ответа от сервера
+    private enum MoviesError: Error, LocalizedError {
+        case custom(message: String)
+        
+        var errorDescription: String? {
+            switch self {
+            case .custom(message: let message):
+                return NSLocalizedString(message, comment: message)
+            }
+        }
+    }
+    
     private let moviesLoader: MoviesLoading
     weak var delegate: QuestionFactoryDelegate?
-    
-    let movieQuizViewController = MovieQuizViewController()
-    
     
     init(moviesLoader: MoviesLoading, delegate: QuestionFactoryDelegate?) {
         self.moviesLoader = moviesLoader
         self.delegate = delegate
     }
     
+    // Переменная массива объектов получаемых по результатам запроса
     private var movies: [MostPopularMovie] = []
     
+    // Метод формирования случайного вопроса и правильного ответа
+    private func makeQuestion(from film: MostPopularMovie) -> [String: Bool] {
+        
+        // Константа рейтинга из загруженных данных
+        let rating = Float(film.rating) ?? 0
+        // Константа рейтинга для формирования вопроса
+        let randomRating = Int.random(in: 5..<10)
+        // Определяем сравнение которое будет указано в вопросе
+        let condition = ["graterThan": "больше", "lessThan": "меньше"]
+        // Константа для правильного ответа
+        var correctAnswer: Bool
+        
+        // Выбор сравнения больше/меньше для вопроса
+        guard let randomCondition = condition.randomElement() else { return ["Error":false] }
+        
+        // Формирование вопроса
+        let text = "Рейтинг этого фильма \(randomCondition.value) чем \(randomRating)?"
+ 
+        // Определение правильного ответа исходя из сформированного вопроса
+        correctAnswer = rating > Float(randomRating) ? (randomCondition.key == "graterThan" ? true : false) : (randomCondition.key == "lessThan" ? true : false)
+        
+        // Возвращаем объект с результатами
+        return [text: correctAnswer]
+    }
+    
+    // Метод загрузки данных
     func loadData() {
         moviesLoader.loadMovies { [weak self] result in
             // Ответ от загрузчика необходимо перевести в главный поток
@@ -28,18 +65,15 @@ final class QuestionFactory: QuestionFactoryProtocol {
                 guard let self = self else { return }
                 switch result {
                 case .success(let mostPopularMovies):
-                    // Если массив фильмов оказался пустым
-                    if mostPopularMovies.items.isEmpty {
-                        self.delegate?.didFailToLoadData(with: "Ошибка загрузки перечня фильмов" as! any Error)
-                    // Если есть сообщение об ошибке
-                    } else if mostPopularMovies.errorMessage != "" {
-                        self.delegate?.didFailToLoadData(with: "\(mostPopularMovies.errorMessage)" as! any Error)
+                    // Если errorMessage не пустое
+                    if mostPopularMovies.errorMessage != "" {
+                        self.delegate?.didFailToLoadData(with: MoviesError.custom(message: mostPopularMovies.errorMessage))
                     } else {
-                    // Если все ошибок нет
+                        // Если ошибок нет
                         self.movies = mostPopularMovies.items
                         self.delegate?.didLoadDataFromServer()
                     }
-                // Если есть ошибки с кодом
+                    // Если есть ошибки с кодом
                 case .failure(let error):
                     self.delegate?.didFailToLoadData(with: error)
                 }
@@ -47,6 +81,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
         }
     }
     
+    // Метод запроса следующего вопроса из массива объектов
     func requestNextQuestion() {
         // Запуск получения данных по сети в отдельном потоке, асинхронно
         DispatchQueue.global().async { [weak self] in
@@ -68,11 +103,15 @@ final class QuestionFactory: QuestionFactoryProtocol {
                 }
             }
             
-            // Определяем рейтинг, рейтинг разный для каждого вопроса
-            let rating = Float(movie.rating) ?? 0
-            let randomRating = Int.random(in: 5..<10)
-            let text = "Рейтинг этого фильма больше чем \(randomRating)?"
-            let correctAnswer = rating > Float(randomRating)
+            // Константа с случайным вопросом и правильным ответом
+            let questionToShow: [String: Bool] = makeQuestion(from: movie)
+            
+            // Константы вопроса и правильного ответа
+            let text = questionToShow.first?.key
+            let correctAnswer = questionToShow.first?.value
+            
+            // Формирование модели вопроса
+            guard let text = text, let correctAnswer = correctAnswer else { return }
             let question = QuizQuestion(image: imageData,
                                         text: text,
                                         correctAnswer: correctAnswer)
