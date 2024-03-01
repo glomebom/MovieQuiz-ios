@@ -72,7 +72,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private func switchToTheNextQuestion() {
         currentQuestionIndex += 1
     }
-
+    
     // Метод проверки на последний вопрос
     private func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
@@ -90,7 +90,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         // Константа для записи значения ответа пользователя на вопрос
         let givenAnswer = isYes
-
+        
         // Вызов метода проверки правильности ответа на вопрос
         proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
@@ -122,7 +122,10 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             let alertModel = AlertModel(
                 title: "Этот раунд окончен!",
                 text: text,
-                buttonText: "Сыграть еще раз")
+                buttonText: "Сыграть еще раз",
+                completion: { [weak self] in
+                    self?.restartGame()
+                })
             
             // Вызов метода показа алерта
             viewController?.show(quiz: alertModel)
@@ -133,10 +136,10 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             
             // Показ индикатора
             viewController?.showLoadingIndicator()
-
+            
             // Запрашиваем следующий вопрос
             questionFactory?.requestNextQuestion()
-
+            
             // Скрытие индикатора
             viewController?.hideLoadingIndicator()
         }
@@ -169,8 +172,9 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
-        // Запрашиваем следующий вопрос
-        questionFactory?.requestNextQuestion()
+
+        // Загрузка данных для новой игры
+        questionFactory?.loadData()
     }
     
     // Метод конвертации вопроса в view-модель

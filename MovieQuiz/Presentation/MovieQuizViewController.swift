@@ -63,19 +63,8 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     
     // Метод для показа алерта
     func show(quiz result: AlertModel) {
-        
-        // Формирование модели для показа алерта с результатами
-        let alertModel = AlertModel(
-            title: result.title,
-            text: result.text,
-            buttonText: result.buttonText,
-            completion: { [weak self] in
-                guard let self = self else { return }
-                self.presenter.restartGame()
-            })
-        
         // Вызов метода показа алерта с результатами
-        alertPresenter.showAlert(controller: self, alertModel: alertModel)
+        alertPresenter.showAlert(controller: self, alertModel: result)
     }
     
     // Метод показа индикатора
@@ -121,7 +110,10 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         // Константа для алерта, message берем из ошибки error.localizedDescription
         let alertModel = AlertModel(title: "Ошибка",
                                     text: message,
-                                    buttonText: "Попробовать еще раз")
+                                    buttonText: "Попробовать еще раз",
+                                    completion: { [weak self] in
+            self?.presenter.restartGame()
+        })
         
         // Вызов метода показа алерта
         self.show(quiz: alertModel)
